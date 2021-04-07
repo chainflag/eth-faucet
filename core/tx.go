@@ -3,11 +3,9 @@ package core
 import (
 	"context"
 	"crypto/ecdsa"
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -15,9 +13,8 @@ import (
 )
 
 type ITxBuilder interface {
-	buildTransaction(to string, value *big.Int, data []byte) (*types.Transaction, error)
-	signTransaction(tx *types.Transaction) (*types.Transaction, error)
-	submitTransaction(tx *types.Transaction) (string, error)
+	BuildUnsignedTx(to string, value *big.Int, data []byte) (*types.Transaction, error)
+	SubmitSignedTx(tx *types.Transaction) (*types.Transaction, error)
 }
 
 type txBuilder struct {
@@ -54,7 +51,7 @@ func NewTxBuilder(provider, hexkey string) *txBuilder {
 	}
 }
 
-func (b txBuilder) buildTransaction(to string, value *big.Int, data []byte) (*types.Transaction, error) {
+func (b txBuilder) BuildUnsignedTx(to string, value *big.Int, data []byte) (*types.Transaction, error) {
 	nonce, err := b.rpc.PendingNonceAt(context.Background(), b.fromAddress)
 	if err != nil {
 		return nil, err
@@ -83,23 +80,15 @@ func (b txBuilder) buildTransaction(to string, value *big.Int, data []byte) (*ty
 	return tx, nil
 }
 
-func (b txBuilder) signTransaction(tx *types.Transaction) (*types.Transaction, error) {
-	return types.SignTx(tx, types.NewEIP155Signer(b.chainID), b.privkey)
-}
-
-func (b txBuilder) submitTransaction(tx *types.Transaction) (string, error) {
-	if err := b.rpc.SendTransaction(context.Background(), tx); err != nil {
-		return "", err
-	}
-
-	receipt, err := bind.WaitMined(context.Background(), b.rpc, tx)
+func (b txBuilder) SubmitSignedTx(tx *types.Transaction) (*types.Transaction, error) {
+	tx, err := types.SignTx(tx, types.NewEIP155Signer(b.chainID), b.privkey)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	if receipt.Status == 0 {
-		return "", fmt.Errorf("tx %x failed", tx.Hash().Hex())
+	if err := b.rpc.SendTransaction(context.Background(), tx); err != nil {
+		return nil, err
 	}
 
-	return tx.Hash().Hex(), nil
+	return tx, nil
 }

@@ -12,16 +12,16 @@ func NewFaucet(builder ITxBuilder) *Faucet {
 }
 
 func (f Faucet) TransferEther(to string) (string, error) {
-	tx, err := f.txBuilder.buildTransaction(to, f.payout, nil)
+	tx, err := f.txBuilder.BuildUnsignedTx(to, f.payout, nil)
 	if err != nil {
 		return "", err
 	}
 
-	if tx, err = f.txBuilder.signTransaction(tx); err != nil {
+	if tx, err = f.txBuilder.SubmitSignedTx(tx); err != nil {
 		return "", err
 	}
 
-	return f.txBuilder.submitTransaction(tx)
+	return tx.Hash().String(), nil
 }
 
 func (f Faucet) GetPayoutWei() *big.Int {
