@@ -22,12 +22,18 @@ type ITxBuilder interface {
 
 type txBuilder struct {
 	rpc         *ethclient.Client
+	chainID     *big.Int
 	privkey     *ecdsa.PrivateKey
 	fromAddress common.Address
 }
 
 func NewTxBuilder(provider, hexkey string) *txBuilder {
 	client, err := ethclient.Dial(provider)
+	if err != nil {
+		panic(err)
+	}
+
+	chainID, err := client.NetworkID(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -42,6 +48,7 @@ func NewTxBuilder(provider, hexkey string) *txBuilder {
 
 	return &txBuilder{
 		rpc:         client,
+		chainID:     chainID,
 		privkey:     privateKey,
 		fromAddress: fromAddress,
 	}
@@ -77,17 +84,7 @@ func (b txBuilder) buildTransaction(to string, value *big.Int, data []byte) (*ty
 }
 
 func (b txBuilder) signTransaction(tx *types.Transaction) (*types.Transaction, error) {
-	chainID, err := b.rpc.NetworkID(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
-	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), b.privkey)
-	if err != nil {
-		return nil, err
-	}
-
-	return signedTx, nil
+	return types.SignTx(tx, types.NewEIP155Signer(b.chainID), b.privkey)
 }
 
 func (b txBuilder) submitTransaction(tx *types.Transaction) (string, error) {

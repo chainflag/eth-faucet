@@ -2,36 +2,28 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"math/big"
 	"net/http"
 	"regexp"
 	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/urfave/negroni"
-
-	"github.com/chainflag/eth-faucet/core"
 )
-
-var port int
 
 type request struct {
 	Address string `json:"address"`
 }
 
 type response struct {
-	Address string   `json:"address"`
-	TxHash  string   `json:"txhash"`
-	Amount  *big.Int `json:"amount"`
+	Message string `json:"msg"`
 }
 
 type server struct {
-	faucet *core.Faucet
+	worker *worker
 }
 
-func NewServer(faucet *core.Faucet) *server {
-	return &server{faucet: faucet}
+func NewServer(worker *worker) *server {
+	return &server{worker: worker}
 }
 
 func (s server) Run() {
@@ -61,16 +53,13 @@ func (s server) faucetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	txHash, err := s.faucet.TransferEther(req.Address)
-	if err != nil {
-		fmt.Fprintf(w, err.Error())
+	if !s.worker.TryEnqueue(req.Address) {
+		http.Error(w, "Max queue capacity reached", 503)
 		return
 	}
 
 	resp := &response{
-		Address: req.Address,
-		TxHash:  txHash,
-		Amount:  s.faucet.GetPayoutWei(),
+		Message: req.Address,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
