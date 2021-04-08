@@ -1,6 +1,8 @@
 package core
 
-import "math/big"
+import (
+	"math/big"
+)
 
 type Faucet struct {
 	payout    *big.Int
@@ -17,7 +19,7 @@ func (f Faucet) TransferEther(to string) (string, error) {
 		return "", err
 	}
 
-	if tx, err = f.txBuilder.SubmitSignedTx(tx); err != nil {
+	if err := f.txBuilder.SubmitSignedTx(tx); err != nil {
 		return "", err
 	}
 
