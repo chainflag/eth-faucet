@@ -1,30 +1,77 @@
 <script>
-	export let name;
+  export let name;
+  let address = '0x0000000000000000000000000000000000000000';
+
+  function handleRequest() {
+    alert('hello');
+  }
 </script>
 
+<svelte:head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{name}</title>
+</svelte:head>
+
 <main>
-	<h1>Hello {name}!</h1>
-	<p>Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.</p>
+  <nav class="navbar is-link" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="/">
+        <strong>{name}</strong>
+      </a>
+    </div>
+
+    <div class="navbar-menu">
+      <div class="navbar-end">
+        <div class="navbar-item">
+          <div class="button">
+            <a
+              class="button is-text is-small"
+              href="https://github.com/chainflag/eth-faucet"
+              target="_blank"
+            >
+              <strong>View on Github</strong>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <section class="section">
+    <div class="container">
+      <h1 class="title">Get Testnet Ether</h1>
+      <h2 class="subtitle">
+        This faucet drips 1 Ether every day. Serving from account <a
+          href="https://etherscan.io/address/{address}"
+          target="_blank"
+          ><span class="tag is-warning is-light is-medium">{address}</span></a
+        >
+      </h2>
+    </div>
+  </section>
+
+  <div class="container is-fluid">
+    <div class="box">
+      <div class="block">
+        <input
+          class="input is-dark"
+          type="text"
+          placeholder="Enter your account address"
+        />
+      </div>
+      <button on:click={handleRequest} class="button is-danger">Request</button>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="content has-text-centered">
+      <p>
+        Powered by <a href="https://chainflag.org" target="_blank">ChainFlag</a>
+      </p>
+    </div>
+  </footer>
 </main>
 
 <style>
-	main {
-		text-align: center;
-		padding: 1em;
-		max-width: 240px;
-		margin: 0 auto;
-	}
-
-	h1 {
-		color: #ff3e00;
-		text-transform: uppercase;
-		font-size: 4em;
-		font-weight: 100;
-	}
-
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
-		}
-	}
 </style>
