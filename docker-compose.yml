@@ -1,0 +1,20 @@
+version: "3.9"
+services:
+  api:
+    build: .
+    container_name: faucet-api
+    volumes:
+      - "./config.yml:/app/config.yml"
+    restart: always
+
+  web:
+    image: nginx:alpine
+    container_name: faucet-frontend
+    ports:
+      - "80:80"
+    links:
+      - api
+    volumes:
+      - "./web/public:/usr/share/nginx/html"
+      - "./nginx:/etc/nginx/conf.d"
+    restart: always
