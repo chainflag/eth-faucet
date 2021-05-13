@@ -1,9 +1,19 @@
 <script>
   export let name;
-  let address = '0x0000000000000000000000000000000000000000';
+  let fundAddress = '0x0000000000000000000000000000000000000000';
+  let address = null;
 
-  function handleRequest() {
-    alert('hello');
+  async function handleRequest() {
+    const res = await fetch('/api/', {
+      method: 'POST',
+      body: JSON.stringify({
+        address,
+      }),
+    });
+
+    const json = await res.json();
+    const result = JSON.stringify(json);
+    alert(result);
   }
 </script>
 
@@ -42,10 +52,8 @@
     <div class="container">
       <h1 class="title">Get Testnet Ether</h1>
       <h2 class="subtitle">
-        This faucet drips 1 Ether every day. Serving from account <a
-          href="https://etherscan.io/address/{address}"
-          target="_blank"
-          ><span class="tag is-warning is-light is-medium">{address}</span></a
+        This faucet drips 1 Ether every day. Serving from account <span
+          class="tag is-warning is-light is-medium">{fundAddress}</span
         >
       </h2>
     </div>
@@ -55,6 +63,7 @@
     <div class="box">
       <div class="block">
         <input
+          bind:value={address}
           class="input is-dark"
           type="text"
           placeholder="Enter your account address"
