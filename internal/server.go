@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"encoding/json"
@@ -19,14 +19,14 @@ type response struct {
 }
 
 type server struct {
-	worker *worker
+	faucet *faucet
 }
 
-func NewServer(worker *worker) *server {
-	return &server{worker: worker}
+func NewServer(faucet *faucet) *server {
+	return &server{faucet: faucet}
 }
 
-func (s server) Run() {
+func (s server) Run(port int) {
 	r := mux.NewRouter()
 	r.Methods("GET").Path("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("$ curl -X POST -d '{\"address\":\"Your ETH address\"}'"))
@@ -53,7 +53,7 @@ func (s server) faucetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !s.worker.TryEnqueue(req.Address) {
+	if !s.faucet.TryEnqueue(req.Address) {
 		http.Error(w, "Max queue capacity reached", 503)
 		return
 	}
