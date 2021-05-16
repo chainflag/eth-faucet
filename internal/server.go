@@ -2,6 +2,7 @@ package internal
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -12,10 +13,6 @@ import (
 
 type request struct {
 	Address string `json:"address"`
-}
-
-type response struct {
-	Message string `json:"msg"`
 }
 
 type server struct {
@@ -29,7 +26,7 @@ func NewServer(faucet *faucet) *server {
 func (s server) Run(port int) {
 	r := mux.NewRouter()
 	r.Methods("GET").Path("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("$ curl -X POST -d '{\"address\":\"Your ETH address\"}'"))
+		fmt.Fprintf(w, "$ curl -X POST -d '{\"address\":\"Your ETH address\"}'")
 	})
 	r.Methods("POST").Path("/").HandlerFunc(s.faucetHandler)
 
@@ -58,10 +55,5 @@ func (s server) faucetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := &response{
-		Message: req.Address,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	fmt.Fprintf(w, "Added %s to the queue", req.Address)
 }

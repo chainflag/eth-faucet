@@ -36,6 +36,7 @@ func Execute() {
 	maxQueue := conf.GetInt("maxqueue")
 
 	faucet := internal.NewFaucet(maxQueue, internal.NewTxBuilder(provider, privKey))
+	defer faucet.Close()
 	faucet.SetPayoutEther(int64(conf.GetInt("payout")))
 	go faucet.Run()
 
