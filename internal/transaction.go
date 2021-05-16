@@ -13,8 +13,8 @@ import (
 )
 
 type ITxBuilder interface {
-	buildUnsignedTx(to string, value *big.Int, data []byte) (*types.Transaction, error)
-	submitSignedTx(tx *types.Transaction) error
+	BuildUnsignedTx(to string, value *big.Int, data []byte) (*types.Transaction, error)
+	SignAndSubmitTx(tx *types.Transaction) error
 }
 
 type txBuilder struct {
@@ -51,7 +51,7 @@ func NewTxBuilder(provider, hexkey string) *txBuilder {
 	}
 }
 
-func (b txBuilder) buildUnsignedTx(to string, value *big.Int, data []byte) (*types.Transaction, error) {
+func (b txBuilder) BuildUnsignedTx(to string, value *big.Int, data []byte) (*types.Transaction, error) {
 	nonce, err := b.rpc.PendingNonceAt(context.Background(), b.fromAddress)
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (b txBuilder) buildUnsignedTx(to string, value *big.Int, data []byte) (*typ
 	return tx, nil
 }
 
-func (b txBuilder) submitSignedTx(tx *types.Transaction) error {
+func (b txBuilder) SignAndSubmitTx(tx *types.Transaction) error {
 	tx, err := types.SignTx(tx, types.NewEIP155Signer(b.chainID), b.privkey)
 	if err != nil {
 		return err

@@ -18,7 +18,11 @@ func NewFaucet(capacity int, builder ITxBuilder) *faucet {
 	}
 }
 
-func (f *faucet) TryEnqueue(job string) bool {
+func (f faucet) isEmptyQueue() bool {
+	return len(f.queue) == 0
+}
+
+func (f *faucet) tryEnqueue(job string) bool {
 	select {
 	case f.queue <- job:
 		return true
@@ -36,13 +40,13 @@ func (f *faucet) SetPayoutEther(amount int64) {
 	f.payout = payoutWei
 }
 
-func (f faucet) transferFund(to string) (string, error) {
-	tx, err := f.txBuilder.buildUnsignedTx(to, f.payout, nil)
+func (f faucet) fundTransfer(to string) (string, error) {
+	tx, err := f.txBuilder.BuildUnsignedTx(to, f.payout, nil)
 	if err != nil {
 		return "", err
 	}
 
-	if err := f.txBuilder.submitSignedTx(tx); err != nil {
+	if err := f.txBuilder.SignAndSubmitTx(tx); err != nil {
 		return "", err
 	}
 
@@ -51,7 +55,7 @@ func (f faucet) transferFund(to string) (string, error) {
 
 func (f *faucet) Run() {
 	for address := range f.queue {
-		txHash, err := f.transferFund(address)
+		txHash, err := f.fundTransfer(address)
 		if err != nil {
 			log.Println(err)
 		}

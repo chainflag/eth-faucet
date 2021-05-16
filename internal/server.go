@@ -50,8 +50,18 @@ func (s server) faucetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !s.faucet.TryEnqueue(req.Address) {
-		http.Error(w, "Max queue capacity reached", 503)
+	if s.faucet.isEmptyQueue() {
+		txHash, err := s.faucet.fundTransfer(req.Address)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		fmt.Fprintf(w, txHash)
+		return
+	}
+
+	if !s.faucet.tryEnqueue(req.Address) {
+		http.Error(w, "Max queue capacity reached", http.StatusServiceUnavailable)
 		return
 	}
 
