@@ -9,7 +9,7 @@ services:
 
   web:
     image: nginx:alpine
-    container_name: faucet-frontend
+    container_name: faucet-web
     ports:
       - "80:80"
     links:
