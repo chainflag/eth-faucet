@@ -14,7 +14,7 @@ import (
 
 type ITxBuilder interface {
 	BuildUnsignedTx(to string, value *big.Int, data []byte) (*types.Transaction, error)
-	SignAndSubmitTx(tx *types.Transaction) error
+	SignAndSubmitTx(tx *types.Transaction) (string, error)
 }
 
 type txBuilder struct {
@@ -80,11 +80,11 @@ func (b txBuilder) BuildUnsignedTx(to string, value *big.Int, data []byte) (*typ
 	return tx, nil
 }
 
-func (b txBuilder) SignAndSubmitTx(tx *types.Transaction) error {
+func (b txBuilder) SignAndSubmitTx(tx *types.Transaction) (string, error) {
 	tx, err := types.SignTx(tx, types.NewEIP155Signer(b.chainID), b.privkey)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return b.rpc.SendTransaction(context.Background(), tx)
+	return tx.Hash().String(), b.rpc.SendTransaction(context.Background(), tx)
 }

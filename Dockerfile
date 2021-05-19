@@ -1,5 +1,8 @@
 FROM golang:1.16-alpine as builder
 
+ENV GO111MODULE=on \
+    GOPROXY=https://goproxy.cn,direct
+
 RUN apk add --no-cache gcc musl-dev linux-headers
 
 WORKDIR /go/src/github.com/chainflag/eth-faucet

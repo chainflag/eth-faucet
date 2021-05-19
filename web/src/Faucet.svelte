@@ -3,7 +3,7 @@
 
   const { addNotification } = getNotificationsContext();
 
-  let fundAddress = '0x0000000000000000000000000000000000000000';
+  let fundAddress = '0x04daa5C20d3278Ce47241805b1572d4a6ab95Db3';
   let address = null;
   async function handleRequest() {
     const res = await fetch('/api/', {

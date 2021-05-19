@@ -41,16 +41,12 @@ func (f *faucet) SetPayoutEther(amount int64) {
 }
 
 func (f faucet) fundTransfer(to string) (string, error) {
-	tx, err := f.txBuilder.BuildUnsignedTx(to, f.payout, nil)
+	unsignedTx, err := f.txBuilder.BuildUnsignedTx(to, f.payout, nil)
 	if err != nil {
 		return "", err
 	}
 
-	if err := f.txBuilder.SignAndSubmitTx(tx); err != nil {
-		return "", err
-	}
-
-	return tx.Hash().String(), nil
+	return f.txBuilder.SignAndSubmitTx(unsignedTx)
 }
 
 func (f *faucet) Run() {
