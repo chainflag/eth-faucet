@@ -54,6 +54,7 @@ func (s server) faucetHandler(w http.ResponseWriter, r *http.Request) {
 		txHash, err := s.faucet.fundTransfer(req.Address)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		fmt.Fprintf(w, txHash)
