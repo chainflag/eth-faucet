@@ -13,7 +13,7 @@
       }),
     });
 
-    const text = await res.text();
+    let text = res.status === 429 ? res.statusText : await res.text();
     let type = res.ok ? 'warning' : 'danger';
     addNotification({
       text,
