@@ -40,7 +40,7 @@ func (s server) Run(port int) {
 func (s server) faucetHandler(w http.ResponseWriter, r *http.Request) {
 	var req request
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -50,21 +50,20 @@ func (s server) faucetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if s.faucet.isEmptyQueue() {
-		txHash, err := s.faucet.fundTransfer(req.Address)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+	if !s.faucet.isEmptyQueue() {
+		if s.faucet.tryEnqueue(req.Address) {
+			fmt.Fprintf(w, "Added %s to the queue", req.Address)
+		} else {
+			http.Error(w, "Max queue capacity reached", http.StatusServiceUnavailable)
 		}
-
-		fmt.Fprintf(w, txHash)
 		return
 	}
 
-	if !s.faucet.tryEnqueue(req.Address) {
-		http.Error(w, "Max queue capacity reached", http.StatusServiceUnavailable)
+	txHash, err := s.faucet.fundTransfer(req.Address)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Fprintf(w, "Added %s to the queue", req.Address)
+	fmt.Fprintf(w, txHash)
 }
