@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
 )
 
@@ -34,6 +35,7 @@ func (s server) Run(port int) {
 	n.Use(negroni.NewLogger())
 	n.UseHandler(r)
 
+	log.Infof("Starting http server %d", port)
 	http.ListenAndServe(":"+strconv.Itoa(port), n)
 }
 
@@ -52,8 +54,12 @@ func (s server) faucetHandler(w http.ResponseWriter, r *http.Request) {
 
 	if !s.faucet.isEmptyQueue() {
 		if s.faucet.tryEnqueue(req.Address) {
+			log.WithFields(log.Fields{
+				"address": req.Address,
+			}).Info("Added to queue successfully")
 			fmt.Fprintf(w, "Added %s to the queue", req.Address)
 		} else {
+			log.Warn("Max queue capacity reached")
 			http.Error(w, "Max queue capacity reached", http.StatusServiceUnavailable)
 		}
 		return
@@ -61,9 +67,14 @@ func (s server) faucetHandler(w http.ResponseWriter, r *http.Request) {
 
 	txHash, err := s.faucet.fundTransfer(req.Address)
 	if err != nil {
+		log.WithError(err).Error("Could not send transaction")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	log.WithFields(log.Fields{
+		"txHash":  txHash,
+		"address": req.Address,
+	}).Info("Funded directly successfully")
 	fmt.Fprintf(w, txHash)
 }

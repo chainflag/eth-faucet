@@ -1,8 +1,9 @@
 package internal
 
 import (
-	"log"
 	"math/big"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type faucet struct {
@@ -53,9 +54,12 @@ func (f *faucet) Run() {
 	for address := range f.queue {
 		txHash, err := f.fundTransfer(address)
 		if err != nil {
-			log.Println(err)
+			log.WithError(err).Error("Failed to handle transaction in the queue")
 		}
-		log.Println(txHash)
+		log.WithFields(log.Fields{
+			"txHash":  txHash,
+			"address": address,
+		}).Info("Consume from queue successfully")
 	}
 }
 
