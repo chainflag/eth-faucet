@@ -1,4 +1,4 @@
-package internal
+package pkg
 
 import (
 	"context"
@@ -24,7 +24,7 @@ type txBuilder struct {
 	fromAddress common.Address
 }
 
-func NewTxBuilder(provider, hexkey string) *txBuilder {
+func NewTxBuilder(provider, hexkey string) ITxBuilder {
 	client, err := ethclient.Dial(provider)
 	if err != nil {
 		panic(err)

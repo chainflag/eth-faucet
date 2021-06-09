@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/chainflag/eth-faucet/internal"
+	"github.com/chainflag/eth-faucet/internal/pkg"
 )
 
 var port int
@@ -35,7 +36,7 @@ func Execute() {
 	privKey := conf.GetString("privkey")
 	maxQueue := conf.GetInt("maxqueue")
 
-	faucet := internal.NewFaucet(maxQueue, internal.NewTxBuilder(provider, privKey))
+	faucet := internal.NewFaucet(maxQueue, pkg.NewTxBuilder(provider, privKey))
 	defer faucet.Close()
 	faucet.SetPayoutEther(int64(conf.GetInt("payout")))
 	go faucet.Run()

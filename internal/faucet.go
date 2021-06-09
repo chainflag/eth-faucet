@@ -4,15 +4,17 @@ import (
 	"math/big"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/chainflag/eth-faucet/internal/pkg"
 )
 
 type faucet struct {
 	payout    *big.Int
 	queue     chan string
-	txBuilder ITxBuilder
+	txBuilder pkg.ITxBuilder
 }
 
-func NewFaucet(capacity int, builder ITxBuilder) *faucet {
+func NewFaucet(capacity int, builder pkg.ITxBuilder) *faucet {
 	return &faucet{
 		queue:     make(chan string, capacity),
 		txBuilder: builder,
