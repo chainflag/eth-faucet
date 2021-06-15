@@ -14,7 +14,7 @@
     });
 
     let text = res.status === 429 ? res.statusText : await res.text();
-    let type = res.ok ? 'warning' : 'danger';
+    let type = res.ok ? 'success' : 'danger';
     addNotification({
       text,
       type,
