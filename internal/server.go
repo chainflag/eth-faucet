@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -60,12 +61,12 @@ func (s server) faucetHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "Added %s to the queue", req.Address)
 		} else {
 			log.Warn("Max queue capacity reached")
-			http.Error(w, "Max queue capacity reached", http.StatusServiceUnavailable)
+			http.Error(w, "Faucet queue is too long, please try again later.", http.StatusServiceUnavailable)
 		}
 		return
 	}
 
-	txHash, err := s.faucet.fundTransfer(req.Address)
+	txHash, err := s.faucet.Transfer(context.Background(), req.Address, s.faucet.GetPayoutWei())
 	if err != nil {
 		log.WithError(err).Error("Could not send transaction")
 		http.Error(w, err.Error(), http.StatusInternalServerError)

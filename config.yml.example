@@ -1,4 +1,4 @@
 provider : "https://ropsten.infura.io/"
 privkey : ""
 payout : 1
-maxqueue : 100
+queuecap : 100

@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"math/big"
 
 	log "github.com/sirupsen/logrus"
@@ -9,15 +10,15 @@ import (
 )
 
 type faucet struct {
-	payout    *big.Int
-	queue     chan string
-	txBuilder pkg.ITxBuilder
+	pkg.ITxBuilder
+	payout *big.Int
+	queue  chan string
 }
 
-func NewFaucet(capacity int, builder pkg.ITxBuilder) *faucet {
+func NewFaucet(provider, privKey string, queueCap int) *faucet {
 	return &faucet{
-		queue:     make(chan string, capacity),
-		txBuilder: builder,
+		ITxBuilder: pkg.NewTxBuilder(provider, privKey),
+		queue:      make(chan string, queueCap),
 	}
 }
 
@@ -43,18 +44,9 @@ func (f *faucet) SetPayoutEther(amount int64) {
 	f.payout = payoutWei
 }
 
-func (f faucet) fundTransfer(to string) (string, error) {
-	unsignedTx, err := f.txBuilder.BuildUnsignedTx(to, f.payout, nil)
-	if err != nil {
-		return "", err
-	}
-
-	return f.txBuilder.SignAndSubmitTx(unsignedTx)
-}
-
 func (f *faucet) Run() {
 	for address := range f.queue {
-		txHash, err := f.fundTransfer(address)
+		txHash, err := f.Transfer(context.Background(), address, f.payout)
 		if err != nil {
 			log.WithError(err).Error("Failed to handle transaction in the queue")
 		}

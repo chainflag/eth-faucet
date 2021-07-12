@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -13,29 +12,22 @@ import (
 )
 
 type ITxBuilder interface {
-	BuildUnsignedTx(to string, value *big.Int, data []byte) (*types.Transaction, error)
-	SignAndSubmitTx(tx *types.Transaction) (string, error)
+	Transfer(ctx context.Context, to string, value *big.Int) (string, error)
 }
 
 type txBuilder struct {
 	rpc         *ethclient.Client
-	chainID     *big.Int
 	privkey     *ecdsa.PrivateKey
 	fromAddress common.Address
 }
 
-func NewTxBuilder(provider, hexkey string) ITxBuilder {
+func NewTxBuilder(provider, privateKeyHex string) ITxBuilder {
 	client, err := ethclient.Dial(provider)
 	if err != nil {
 		panic(err)
 	}
 
-	chainID, err := client.NetworkID(context.Background())
-	if err != nil {
-		panic(err)
-	}
-
-	privateKey, err := crypto.HexToECDSA(hexkey)
+	privateKey, err := crypto.HexToECDSA(privateKeyHex)
 	if err != nil {
 		panic(err)
 	}
@@ -45,46 +37,41 @@ func NewTxBuilder(provider, hexkey string) ITxBuilder {
 
 	return &txBuilder{
 		rpc:         client,
-		chainID:     chainID,
 		privkey:     privateKey,
 		fromAddress: fromAddress,
 	}
 }
 
-func (b txBuilder) BuildUnsignedTx(to string, value *big.Int, data []byte) (*types.Transaction, error) {
-	nonce, err := b.rpc.PendingNonceAt(context.Background(), b.fromAddress)
+func (b txBuilder) Transfer(ctx context.Context, to string, value *big.Int) (string, error) {
+	nonce, err := b.rpc.PendingNonceAt(ctx, b.fromAddress)
 	if err != nil {
-		return nil, err
+		return "", err
+	}
+
+	gasLimit := uint64(21000)
+	gasPrice, err := b.rpc.SuggestGasPrice(ctx)
+	if err != nil {
+		return "", err
 	}
 
 	toAddress := common.HexToAddress(to)
-	gasLimit, err := b.rpc.EstimateGas(context.Background(), ethereum.CallMsg{
-		To:   &toAddress,
-		Data: data,
-	})
-
-	gasPrice, err := b.rpc.SuggestGasPrice(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
-	tx := types.NewTx(&types.LegacyTx{
+	unsignedTx := types.NewTx(&types.LegacyTx{
 		Nonce:    nonce,
 		To:       &toAddress,
 		Value:    value,
 		Gas:      gasLimit,
 		GasPrice: gasPrice,
-		Data:     data,
 	})
 
-	return tx, nil
-}
-
-func (b txBuilder) SignAndSubmitTx(tx *types.Transaction) (string, error) {
-	tx, err := types.SignTx(tx, types.NewEIP155Signer(b.chainID), b.privkey)
+	chainID, err := b.rpc.ChainID(ctx)
 	if err != nil {
 		return "", err
 	}
 
-	return tx.Hash().String(), b.rpc.SendTransaction(context.Background(), tx)
+	signedTx, err := types.SignTx(unsignedTx, types.NewEIP155Signer(chainID), b.privkey)
+	if err != nil {
+		return unsignedTx.Hash().String(), err
+	}
+
+	return signedTx.Hash().String(), b.rpc.SendTransaction(ctx, signedTx)
 }
