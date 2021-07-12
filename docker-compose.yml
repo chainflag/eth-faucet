@@ -5,8 +5,6 @@ services:
     container_name: faucet-api
     volumes:
       - ./config.yml:/app/config.yml
-    depends_on:
-      - web
     restart: always
 
   web:
@@ -18,4 +16,6 @@ services:
       - api
     volumes:
       - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - api
     restart: always
