@@ -12,16 +12,18 @@ import (
 )
 
 type ITxBuilder interface {
+	FromAddress() common.Address
 	Transfer(ctx context.Context, to string, value *big.Int) (string, error)
 }
 
-type txBuilder struct {
-	rpc         *ethclient.Client
-	privkey     *ecdsa.PrivateKey
+type TxBuilder struct {
+	chainID     *big.Int
+	client      *ethclient.Client
+	privateKey  *ecdsa.PrivateKey
 	fromAddress common.Address
 }
 
-func NewTxBuilder(provider, privateKeyHex string) ITxBuilder {
+func NewTxBuilder(provider, privateKeyHex string, chainID *big.Int) ITxBuilder {
 	client, err := ethclient.Dial(provider)
 	if err != nil {
 		panic(err)
@@ -32,24 +34,33 @@ func NewTxBuilder(provider, privateKeyHex string) ITxBuilder {
 		panic(err)
 	}
 
-	publicKeyECDSA, _ := privateKey.Public().(*ecdsa.PublicKey)
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	if chainID == nil {
+		chainID, err = client.ChainID(context.Background())
+		if err != nil {
+			panic(err)
+		}
+	}
 
-	return &txBuilder{
-		rpc:         client,
-		privkey:     privateKey,
-		fromAddress: fromAddress,
+	return &TxBuilder{
+		chainID:     chainID,
+		client:      client,
+		privateKey:  privateKey,
+		fromAddress: crypto.PubkeyToAddress(privateKey.PublicKey),
 	}
 }
 
-func (b txBuilder) Transfer(ctx context.Context, to string, value *big.Int) (string, error) {
-	nonce, err := b.rpc.PendingNonceAt(ctx, b.fromAddress)
+func (b *TxBuilder) FromAddress() common.Address {
+	return b.fromAddress
+}
+
+func (b *TxBuilder) Transfer(ctx context.Context, to string, value *big.Int) (string, error) {
+	nonce, err := b.client.PendingNonceAt(ctx, b.fromAddress)
 	if err != nil {
 		return "", err
 	}
 
 	gasLimit := uint64(21000)
-	gasPrice, err := b.rpc.SuggestGasPrice(ctx)
+	gasPrice, err := b.client.SuggestGasPrice(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -63,15 +74,10 @@ func (b txBuilder) Transfer(ctx context.Context, to string, value *big.Int) (str
 		GasPrice: gasPrice,
 	})
 
-	chainID, err := b.rpc.ChainID(ctx)
-	if err != nil {
-		return "", err
-	}
-
-	signedTx, err := types.SignTx(unsignedTx, types.NewEIP155Signer(chainID), b.privkey)
+	signedTx, err := types.SignTx(unsignedTx, types.NewEIP155Signer(b.chainID), b.privateKey)
 	if err != nil {
 		return unsignedTx.Hash().String(), err
 	}
 
-	return signedTx.Hash().String(), b.rpc.SendTransaction(ctx, signedTx)
+	return signedTx.Hash().String(), b.client.SendTransaction(ctx, signedTx)
 }

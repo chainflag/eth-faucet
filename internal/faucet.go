@@ -15,9 +15,9 @@ type faucet struct {
 	queue  chan string
 }
 
-func NewFaucet(provider, privKey string, queueCap int) *faucet {
+func NewFaucet(builder pkg.ITxBuilder, queueCap int) *faucet {
 	return &faucet{
-		ITxBuilder: pkg.NewTxBuilder(provider, privKey),
+		ITxBuilder: builder,
 		queue:      make(chan string, queueCap),
 	}
 }

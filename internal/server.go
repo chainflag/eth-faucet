@@ -27,10 +27,8 @@ func NewServer(faucet *faucet) *server {
 
 func (s server) Run(port int) {
 	r := mux.NewRouter()
-	r.Methods("GET").Path("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "$ curl -X POST -d '{\"address\":\"Your ETH address\"}'")
-	})
-	r.Methods("POST").Path("/").HandlerFunc(s.faucetHandler)
+	r.Methods("POST").Path("/faucet").HandlerFunc(s.faucetHandler)
+	r.Methods("GET").Path("/info").HandlerFunc(s.infoHandler)
 
 	n := negroni.New()
 	n.Use(negroni.NewLogger())
@@ -78,4 +76,17 @@ func (s server) faucetHandler(w http.ResponseWriter, r *http.Request) {
 		"address": req.Address,
 	}).Info("Funded directly successfully")
 	fmt.Fprintf(w, txHash)
+}
+
+func (s server) infoHandler(w http.ResponseWriter, r *http.Request) {
+	type Info struct {
+		Account string `json:"account"`
+		Payout  string `json:"payout"`
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(Info{
+		Account: s.faucet.FromAddress().String(),
+		Payout:  s.faucet.GetPayoutWei().String(),
+	})
 }

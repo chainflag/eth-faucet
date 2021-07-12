@@ -1,12 +1,24 @@
 <script>
+  import { onMount } from 'svelte';
+  import { formatEther } from '@ethersproject/units';
   import { getNotificationsContext } from 'svelte-notifications';
 
   const { addNotification } = getNotificationsContext();
 
-  let fundAddress = '0x04daa5C20d3278Ce47241805b1572d4a6ab95Db3';
   let address = null;
+  let faucetInfo = {
+    account: '0x0000000000000000000000000000000000000000',
+    payout: 1,
+  };
+
+  onMount(async () => {
+    const res = await fetch('/api/info');
+    faucetInfo = await res.json();
+    faucetInfo.payout = parseInt(formatEther(faucetInfo.payout));
+  });
+
   async function handleRequest() {
-    const res = await fetch('/api/', {
+    const res = await fetch('/api/faucet', {
       method: 'POST',
       body: JSON.stringify({
         address,
@@ -51,10 +63,11 @@
 
   <section class="section">
     <div class="container">
-      <h1 class="title">Get Testnet Ether</h1>
+      <h1 class="title">Claim {faucetInfo.payout}ether every min</h1>
       <h2 class="subtitle">
-        This faucet drips 1 Ether every day. Serving from account <span
-          class="tag is-warning is-light is-medium">{fundAddress}</span
+        Serving from account
+        <span class="tag is-warning is-light is-medium"
+          >{faucetInfo.account}</span
         >
       </h2>
     </div>
