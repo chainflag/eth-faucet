@@ -8,14 +8,10 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
 )
-
-type request struct {
-	Address string `json:"address"`
-}
 
 type server struct {
 	faucet *faucet
@@ -26,9 +22,9 @@ func NewServer(faucet *faucet) *server {
 }
 
 func (s server) Run(port int) {
-	r := mux.NewRouter()
-	r.Methods("POST").Path("/api/faucet").HandlerFunc(s.faucetHandler)
-	r.Methods("GET").Path("/api/info").HandlerFunc(s.infoHandler)
+	r := httprouter.New()
+	r.HandlerFunc("POST", "/api/faucet", s.faucetHandler)
+	r.HandlerFunc("GET", "/api/info", s.infoHandler)
 
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
 	n.Use(negroni.NewStatic(http.Dir("web/public")))
@@ -39,6 +35,10 @@ func (s server) Run(port int) {
 }
 
 func (s server) faucetHandler(w http.ResponseWriter, r *http.Request) {
+	type request struct {
+		Address string `json:"address"`
+	}
+
 	var req request
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
