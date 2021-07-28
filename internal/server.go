@@ -27,11 +27,11 @@ func NewServer(faucet *faucet) *server {
 
 func (s server) Run(port int) {
 	r := mux.NewRouter()
-	r.Methods("POST").Path("/faucet").HandlerFunc(s.faucetHandler)
-	r.Methods("GET").Path("/info").HandlerFunc(s.infoHandler)
+	r.Methods("POST").Path("/api/faucet").HandlerFunc(s.faucetHandler)
+	r.Methods("GET").Path("/api/info").HandlerFunc(s.infoHandler)
 
-	n := negroni.New()
-	n.Use(negroni.NewLogger())
+	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
+	n.Use(negroni.NewStatic(http.Dir("web/public")))
 	n.UseHandler(r)
 
 	log.Infof("Starting http server %d", port)
