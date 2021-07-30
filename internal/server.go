@@ -23,7 +23,7 @@ func NewServer(faucet *faucet) *server {
 
 func (s server) Run(port int) {
 	r := httprouter.New()
-	r.HandlerFunc("POST", "/api/faucet", s.faucetHandler)
+	r.HandlerFunc("POST", "/api/claim", s.claimHandler)
 	r.HandlerFunc("GET", "/api/info", s.infoHandler)
 
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
@@ -34,7 +34,7 @@ func (s server) Run(port int) {
 	http.ListenAndServe(":"+strconv.Itoa(port), n)
 }
 
-func (s server) faucetHandler(w http.ResponseWriter, r *http.Request) {
+func (s server) claimHandler(w http.ResponseWriter, r *http.Request) {
 	type request struct {
 		Address string `json:"address"`
 	}

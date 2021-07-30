@@ -18,7 +18,7 @@
   });
 
   async function handleRequest() {
-    const res = await fetch('/api/faucet', {
+    const res = await fetch('/api/claim', {
       method: 'POST',
       body: JSON.stringify({
         address,
