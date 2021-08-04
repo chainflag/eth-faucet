@@ -20,9 +20,7 @@ func init() {
 
 func initConfig() *viper.Viper {
 	v := viper.New()
-	v.SetConfigName("config")
-	v.SetConfigType("yml")
-	v.AddConfigPath(".")
+	v.SetConfigFile("./config.yml")
 	if err := v.ReadInConfig(); err != nil {
 		panic(err)
 	}

@@ -46,14 +46,15 @@ func (f *faucet) SetPayoutEther(amount int64) {
 
 func (f *faucet) Run() {
 	for address := range f.queue {
-		txHash, err := f.Transfer(context.Background(), address, f.payout)
+		txHash, err := f.Transfer(context.Background(), address, f.GetPayoutWei())
 		if err != nil {
 			log.WithError(err).Error("Failed to handle transaction in the queue")
+		} else {
+			log.WithFields(log.Fields{
+				"txHash":  txHash,
+				"address": address,
+			}).Info("Consume from queue successfully")
 		}
-		log.WithFields(log.Fields{
-			"txHash":  txHash,
-			"address": address,
-		}).Info("Consume from queue successfully")
 	}
 }
 
