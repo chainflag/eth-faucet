@@ -15,6 +15,7 @@ RUN apk add --no-cache gcc musl-dev linux-headers
 WORKDIR /backend-build
 
 COPY . .
+COPY --from=frontend /frontend-build/public ./web/public
 
 RUN go build -o eth-faucet -ldflags "-w -s"
 
@@ -23,7 +24,6 @@ FROM alpine
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
 
-COPY --from=frontend /frontend-build/public ./web/public
 COPY --from=backend /backend-build/eth-faucet .
 
 EXPOSE 8080

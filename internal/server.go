@@ -11,6 +11,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
+
+	"github.com/chainflag/eth-faucet/web"
 )
 
 type server struct {
@@ -27,11 +29,11 @@ func (s server) Run(port int) {
 	r.HandlerFunc("GET", "/api/info", s.infoHandler)
 
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
-	n.Use(negroni.NewStatic(http.Dir("web/public")))
+	n.Use(negroni.NewStatic(web.Dist()))
 	n.UseHandler(r)
 
 	log.Infof("Starting http server %d", port)
-	http.ListenAndServe(":"+strconv.Itoa(port), n)
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), n))
 }
 
 func (s server) claimHandler(w http.ResponseWriter, r *http.Request) {
