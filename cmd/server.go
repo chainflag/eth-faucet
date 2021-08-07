@@ -40,7 +40,7 @@ func Execute() {
 	go faucet.Run()
 
 	server := internal.NewServer(faucet)
-	go server.Run(port)
+	go server.Start(port)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
