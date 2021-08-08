@@ -39,8 +39,9 @@ func (f faucet) GetPayoutWei() *big.Int {
 	return f.payout
 }
 
-func (f *faucet) SetPayoutEther(amount int64) {
-	payoutWei := new(big.Int).Mul(big.NewInt(amount), new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))
+func (f *faucet) SetPayoutEther(amount int) {
+	ether := new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
+	payoutWei := new(big.Int).Mul(big.NewInt(int64(amount)), ether)
 	f.payout = payoutWei
 }
 
