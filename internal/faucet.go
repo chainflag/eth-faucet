@@ -6,16 +6,16 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/chainflag/eth-faucet/internal/pkg"
+	"github.com/chainflag/eth-faucet/internal/chain"
 )
 
 type faucet struct {
-	pkg.ITxBuilder
+	chain.ITxBuilder
 	payout *big.Int
 	queue  chan string
 }
 
-func NewFaucet(builder pkg.ITxBuilder, queueCap int) *faucet {
+func NewFaucet(builder chain.ITxBuilder, queueCap int) *faucet {
 	return &faucet{
 		ITxBuilder: builder,
 		queue:      make(chan string, queueCap),

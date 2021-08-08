@@ -5,10 +5,11 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/spf13/viper"
 
 	"github.com/chainflag/eth-faucet/internal"
-	"github.com/chainflag/eth-faucet/internal/pkg"
+	"github.com/chainflag/eth-faucet/internal/chain"
 )
 
 var port int
@@ -31,10 +32,14 @@ func initConfig() *viper.Viper {
 func Execute() {
 	conf := initConfig()
 	provider := conf.GetString("provider")
-	privKey := conf.GetString("privkey")
 	queueCap := conf.GetInt("queuecap")
 
-	faucet := internal.NewFaucet(pkg.NewTxBuilder(provider, privKey, nil), queueCap)
+	privateKey, err := crypto.HexToECDSA(conf.GetString("privkey"))
+	if err != nil {
+		panic(err)
+	}
+
+	faucet := internal.NewFaucet(chain.NewTxBuilder(provider, privateKey, nil), queueCap)
 	defer faucet.Close()
 	faucet.SetPayoutEther(int64(conf.GetInt("payout")))
 	go faucet.Run()

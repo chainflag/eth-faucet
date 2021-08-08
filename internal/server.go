@@ -105,7 +105,7 @@ func (s server) handleInfo() http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(infoResp{
-			Account: s.faucet.FromAddress().String(),
+			Account: s.faucet.Sender().String(),
 			Payout:  s.faucet.GetPayoutWei().String(),
 		})
 	}
