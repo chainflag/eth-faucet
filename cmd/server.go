@@ -1,15 +1,25 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/spf13/viper"
 
 	"github.com/chainflag/eth-faucet/internal"
-	"github.com/chainflag/eth-faucet/internal/pkg"
+	"github.com/chainflag/eth-faucet/internal/chain"
 )
+
+type config struct {
+	Provider   string
+	Payout     int
+	QueueCap   int
+	PrivateKey *ecdsa.PrivateKey
+}
 
 var port int
 
@@ -18,25 +28,43 @@ func init() {
 	flag.Parse()
 }
 
-func initConfig() *viper.Viper {
+func initConfig() *config {
 	v := viper.New()
 	v.SetConfigFile("./config.yml")
 	if err := v.ReadInConfig(); err != nil {
-		panic(err)
+		panic(fmt.Errorf("Fatal error config file: %v \n", err))
 	}
 
-	return v
+	privateKey, err := func(walletConf map[string]string) (*ecdsa.PrivateKey, error) {
+		if walletConf["privkey"] != "" {
+			return crypto.HexToECDSA(walletConf["privkey"])
+		}
+
+		keyfile, err := chain.ResolveKeyfilePath(walletConf["keystore"])
+		if err != nil {
+			panic(err)
+		}
+
+		return chain.DecryptPrivateKey(keyfile, walletConf["password"])
+	}(v.GetStringMapString("wallet"))
+
+	if err != nil {
+		panic(fmt.Errorf("Failed to parse private key: %v \n", err))
+	}
+
+	return &config{
+		Provider:   v.GetString("provider"),
+		Payout:     v.GetInt("payout"),
+		QueueCap:   v.GetInt("queuecap"),
+		PrivateKey: privateKey,
+	}
 }
 
 func Execute() {
 	conf := initConfig()
-	provider := conf.GetString("provider")
-	privKey := conf.GetString("privkey")
-	queueCap := conf.GetInt("queuecap")
-
-	faucet := internal.NewFaucet(pkg.NewTxBuilder(provider, privKey, nil), queueCap)
+	faucet := internal.NewFaucet(chain.NewTxBuilder(conf.Provider, conf.PrivateKey, nil), conf.QueueCap)
 	defer faucet.Close()
-	faucet.SetPayoutEther(int64(conf.GetInt("payout")))
+	faucet.SetPayoutEther(conf.Payout)
 	go faucet.Run()
 
 	server := internal.NewServer(faucet)

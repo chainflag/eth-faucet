@@ -1,4 +1,4 @@
-package pkg
+package chain
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 )
 
 type ITxBuilder interface {
-	FromAddress() common.Address
+	Sender() common.Address
 	Transfer(ctx context.Context, to string, value *big.Int) (string, error)
 }
 
@@ -23,13 +23,8 @@ type TxBuilder struct {
 	fromAddress common.Address
 }
 
-func NewTxBuilder(provider, privateKeyHex string, chainID *big.Int) ITxBuilder {
+func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.Int) ITxBuilder {
 	client, err := ethclient.Dial(provider)
-	if err != nil {
-		panic(err)
-	}
-
-	privateKey, err := crypto.HexToECDSA(privateKeyHex)
 	if err != nil {
 		panic(err)
 	}
@@ -49,7 +44,7 @@ func NewTxBuilder(provider, privateKeyHex string, chainID *big.Int) ITxBuilder {
 	}
 }
 
-func (b *TxBuilder) FromAddress() common.Address {
+func (b *TxBuilder) Sender() common.Address {
 	return b.fromAddress
 }
 

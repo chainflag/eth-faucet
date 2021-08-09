@@ -1,4 +1,8 @@
-provider : "https://ropsten.infura.io/"
-privkey : ""
+provider : "http://geth:8545"
 payout : 1
 queuecap : 100
+
+wallet:
+  privkey: ""
+  keystore: "./keystore"
+  password: "secret"

@@ -6,16 +6,16 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/chainflag/eth-faucet/internal/pkg"
+	"github.com/chainflag/eth-faucet/internal/chain"
 )
 
 type faucet struct {
-	pkg.ITxBuilder
+	chain.ITxBuilder
 	payout *big.Int
 	queue  chan string
 }
 
-func NewFaucet(builder pkg.ITxBuilder, queueCap int) *faucet {
+func NewFaucet(builder chain.ITxBuilder, queueCap int) *faucet {
 	return &faucet{
 		ITxBuilder: builder,
 		queue:      make(chan string, queueCap),
@@ -39,8 +39,9 @@ func (f faucet) GetPayoutWei() *big.Int {
 	return f.payout
 }
 
-func (f *faucet) SetPayoutEther(amount int64) {
-	payoutWei := new(big.Int).Mul(big.NewInt(amount), new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))
+func (f *faucet) SetPayoutEther(amount int) {
+	ether := new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
+	payoutWei := new(big.Int).Mul(big.NewInt(int64(amount)), ether)
 	f.payout = payoutWei
 }
 
