@@ -1,6 +1,6 @@
-provider : "http://geth:8545"
-payout : 1
-queuecap : 100
+provider: "http://geth:8545"
+payout: 1
+queuecap: 100
 
 wallet:
   privkey: ""
