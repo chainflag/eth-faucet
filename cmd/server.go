@@ -28,7 +28,7 @@ func init() {
 	flag.Parse()
 }
 
-func parseConfig() *config {
+func initConfig() *config {
 	v := viper.New()
 	v.SetConfigFile("./config.yml")
 	if err := v.ReadInConfig(); err != nil {
@@ -39,7 +39,13 @@ func parseConfig() *config {
 		if walletConf["privkey"] != "" {
 			return crypto.HexToECDSA(walletConf["privkey"])
 		}
-		return chain.DecryptPrivateKey(walletConf["keystore"], walletConf["password"])
+
+		keyfile, err := chain.ResolveKeyfilePath(walletConf["keystore"])
+		if err != nil {
+			panic(err)
+		}
+
+		return chain.DecryptPrivateKey(keyfile, walletConf["password"])
 	}(v.GetStringMapString("wallet"))
 
 	if err != nil {
@@ -55,7 +61,7 @@ func parseConfig() *config {
 }
 
 func Execute() {
-	conf := parseConfig()
+	conf := initConfig()
 	faucet := internal.NewFaucet(chain.NewTxBuilder(conf.Provider, conf.PrivateKey, nil), conf.QueueCap)
 	defer faucet.Close()
 	faucet.SetPayoutEther(conf.Payout)

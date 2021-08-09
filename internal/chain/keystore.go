@@ -2,7 +2,11 @@ package chain
 
 import (
 	"crypto/ecdsa"
+	"errors"
 	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 )
@@ -19,4 +23,30 @@ func DecryptPrivateKey(keyfile, password string) (*ecdsa.PrivateKey, error) {
 	}
 
 	return key.PrivateKey, nil
+}
+
+func ResolveKeyfilePath(keydir string) (string, error) {
+	keydir, _ = filepath.Abs(keydir)
+	fileInfo, err := os.Stat(keydir)
+	if err != nil {
+		return "", err
+	}
+	if !fileInfo.IsDir() {
+		return keydir, nil
+	}
+
+	files, err := ioutil.ReadDir(keydir)
+	if err != nil {
+		return "", err
+	}
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		if strings.HasPrefix(file.Name(), "UTC") {
+			return filepath.Join(keydir, file.Name()), nil
+		}
+	}
+
+	return "", errors.New("keystore file not found ")
 }
