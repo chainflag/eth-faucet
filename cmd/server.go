@@ -30,7 +30,7 @@ func init() {
 
 func initConfig() *config {
 	v := viper.New()
-	v.SetConfigFile("./config.yml")
+	v.SetConfigFile("config.yml")
 	if err := v.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("Fatal error config file: %v \n", err))
 	}

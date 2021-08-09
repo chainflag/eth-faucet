@@ -4,5 +4,5 @@ queuecap: 100
 
 wallet:
   privkey: ""
-  keystore: "./keystore"
+  keystore: "keystore"
   password: "secret"
