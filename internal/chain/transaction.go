@@ -13,7 +13,7 @@ import (
 
 type ITxBuilder interface {
 	Sender() common.Address
-	Transfer(ctx context.Context, to string, value *big.Int) (string, error)
+	Transfer(ctx context.Context, to string, value *big.Int) (common.Hash, error)
 }
 
 type TxBuilder struct {
@@ -48,16 +48,16 @@ func (b *TxBuilder) Sender() common.Address {
 	return b.fromAddress
 }
 
-func (b *TxBuilder) Transfer(ctx context.Context, to string, value *big.Int) (string, error) {
-	nonce, err := b.client.PendingNonceAt(ctx, b.fromAddress)
+func (b *TxBuilder) Transfer(ctx context.Context, to string, value *big.Int) (common.Hash, error) {
+	nonce, err := b.client.PendingNonceAt(ctx, b.Sender())
 	if err != nil {
-		return "", err
+		return common.Hash{}, err
 	}
 
 	gasLimit := uint64(21000)
 	gasPrice, err := b.client.SuggestGasPrice(ctx)
 	if err != nil {
-		return "", err
+		return common.Hash{}, err
 	}
 
 	toAddress := common.HexToAddress(to)
@@ -71,8 +71,8 @@ func (b *TxBuilder) Transfer(ctx context.Context, to string, value *big.Int) (st
 
 	signedTx, err := types.SignTx(unsignedTx, types.NewEIP155Signer(b.chainID), b.privateKey)
 	if err != nil {
-		return unsignedTx.Hash().String(), err
+		return common.Hash{}, err
 	}
 
-	return signedTx.Hash().String(), b.client.SendTransaction(ctx, signedTx)
+	return signedTx.Hash(), b.client.SendTransaction(ctx, signedTx)
 }

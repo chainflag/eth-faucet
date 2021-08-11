@@ -88,7 +88,7 @@ func (s server) handleClaim() http.HandlerFunc {
 			"txHash":  txHash,
 			"address": req.Address,
 		}).Info("Funded directly successfully")
-		fmt.Fprintf(w, txHash)
+		fmt.Fprintf(w, txHash.String())
 	}
 }
 
