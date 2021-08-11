@@ -1,4 +1,4 @@
-package internal
+package server
 
 import (
 	"context"
@@ -29,13 +29,13 @@ func NewServer(faucet *faucet) *server {
 }
 
 func (s *server) routes() {
-	s.router.HandleFunc("/api/claim", s.handleClaim())
-	s.router.HandleFunc("/api/info", s.handleInfo())
+	s.router.Handle("/", http.FileServer(web.Dist()))
+	s.router.Handle("/api/claim", s.handleClaim())
+	s.router.Handle("/api/info", s.handleInfo())
 }
 
 func (s server) Start(port int) {
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
-	n.Use(negroni.NewStatic(web.Dist()))
 	n.UseHandler(s.router)
 
 	log.Infof("Starting http server %d", port)

@@ -10,8 +10,8 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/spf13/viper"
 
-	"github.com/chainflag/eth-faucet/internal"
 	"github.com/chainflag/eth-faucet/internal/chain"
+	"github.com/chainflag/eth-faucet/internal/server"
 )
 
 type config struct {
@@ -62,13 +62,12 @@ func initConfig() *config {
 
 func Execute() {
 	conf := initConfig()
-	faucet := internal.NewFaucet(chain.NewTxBuilder(conf.Provider, conf.PrivateKey, nil), conf.QueueCap)
-	defer faucet.Close()
+	faucet := server.NewFaucet(chain.NewTxBuilder(conf.Provider, conf.PrivateKey, nil), conf.QueueCap)
 	faucet.SetPayoutEther(conf.Payout)
-	go faucet.Run()
+	defer faucet.Close()
 
-	server := internal.NewServer(faucet)
-	go server.Start(port)
+	go faucet.Run()
+	go server.NewServer(faucet).Start(port)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
