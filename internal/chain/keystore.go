@@ -2,7 +2,7 @@ package chain
 
 import (
 	"crypto/ecdsa"
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -43,10 +43,10 @@ func ResolveKeyfilePath(keydir string) (string, error) {
 		if file.IsDir() {
 			continue
 		}
-		if strings.HasPrefix(file.Name(), "UTC") {
+		if strings.HasPrefix(file.Name(), "UTC--") {
 			return filepath.Join(keydir, file.Name()), nil
 		}
 	}
 
-	return "", errors.New("keystore file not found ")
+	return "", fmt.Errorf("keyfile is not in %s", keydir)
 }
