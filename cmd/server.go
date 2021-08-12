@@ -32,7 +32,7 @@ func initConfig() *config {
 	v := viper.New()
 	v.SetConfigFile("config.yml")
 	if err := v.ReadInConfig(); err != nil {
-		panic(fmt.Errorf("Fatal error config file: %v \n", err))
+		panic(fmt.Errorf("Fatal error config file: %w \n", err))
 	}
 
 	privateKey, err := func(walletConf map[string]string) (*ecdsa.PrivateKey, error) {
@@ -49,7 +49,7 @@ func initConfig() *config {
 	}(v.GetStringMapString("wallet"))
 
 	if err != nil {
-		panic(fmt.Errorf("Failed to parse private key: %v \n", err))
+		panic(fmt.Errorf("Failed to read private key: %w \n", err))
 	}
 
 	return &config{
