@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { isAddress } from '@ethersproject/address';
   import { formatEther } from '@ethersproject/units';
   import { getNotificationsContext } from 'svelte-notifications';
 
@@ -18,13 +19,22 @@
   });
 
   async function handleRequest() {
+    if (!isAddress(address)) {
+      addNotification({
+        text: 'Invalid address',
+        type: 'danger',
+        removeAfter: 4000,
+        position: 'bottom-center',
+      });
+      return;
+    }
+
     const res = await fetch('/api/claim', {
       method: 'POST',
       body: JSON.stringify({
         address,
       }),
     });
-
     let text = await res.text();
     let type = res.ok ? 'success' : 'danger';
     addNotification({
@@ -63,7 +73,7 @@
 
   <section class="section">
     <div class="container">
-      <h1 class="title">Claim {faucetInfo.payout}ether every min</h1>
+      <h1 class="title">Receive {faucetInfo.payout} ETH per request</h1>
       <h2 class="subtitle">
         Serving from account
         <span class="tag is-warning is-light is-medium"
@@ -76,11 +86,12 @@
   <div class="container is-fluid">
     <div class="box">
       <div class="block">
+        <label class="label">Enter your account address</label>
         <input
           bind:value={address}
-          class="input is-dark"
+          class="input"
           type="text"
-          placeholder="Enter your account address"
+          placeholder="0x..."
         />
       </div>
       <button on:click={handleRequest} class="button is-danger">Request</button>
