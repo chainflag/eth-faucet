@@ -47,7 +47,7 @@
 </script>
 
 <main>
-  <nav class="navbar is-link" role="navigation" aria-label="main navigation">
+  <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
       <a class="navbar-item" href="/">
         <strong>Ether Faucet</strong>
@@ -76,9 +76,7 @@
       <h1 class="title">Receive {faucetInfo.payout} ETH per request</h1>
       <h2 class="subtitle">
         Serving from account
-        <span class="tag is-warning is-light is-medium"
-          >{faucetInfo.account}</span
-        >
+        <span class="tag is-light is-medium">{faucetInfo.account}</span>
       </h2>
     </div>
   </section>
@@ -94,15 +92,8 @@
           placeholder="0x..."
         />
       </div>
-      <button on:click={handleRequest} class="button is-danger">Request</button>
+      <button on:click={handleRequest} class="button is-primary">Request</button
+      >
     </div>
   </div>
-
-  <footer class="footer">
-    <div class="content has-text-centered">
-      <p>
-        Powered by <a href="https://chainflag.org" target="_blank">ChainFlag</a>
-      </p>
-    </div>
-  </footer>
 </main>
