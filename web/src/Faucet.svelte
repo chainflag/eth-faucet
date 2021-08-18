@@ -26,6 +26,7 @@
         removeAfter: 4000,
         position: 'bottom-center',
       });
+      window.scrollTo(0, document.documentElement.scrollHeight-document.documentElement.clientHeight); 
       return;
     }
 
@@ -47,62 +48,89 @@
 </script>
 
 <main>
-  <nav class="navbar is-link" role="navigation" aria-label="main navigation">
-    <div class="navbar-brand">
-      <a class="navbar-item" href="/">
-        <strong>Ether Faucet</strong>
-      </a>
-    </div>
+<body>
+    <section class="hero is-info is-fullheight">
+        <div class="hero-head">
+            <nav class="navbar">
+                <div class="container">
+                    <div class="navbar-brand">
+                        <a class="navbar-item" href="../">
+                            <img src="./favicon.png" alt="Logo">
+                        </a>
+                        <span class="navbar-burger burger" data-target="navbarMenu">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </span>
+                    </div>
+                    <div id="navbarMenu" class="navbar-menu">
+                        <div class="navbar-end">
+                            <span class="navbar-item">
+                                <a class="button is-white is-outlined" href="#">
+                                    <span class="icon">
+                                        <i class="fa fa-home"></i>
+                                    </span>
+                                    <span>Home</span>
+                                </a>
+                            </span>
+                            <span class="navbar-item">
+                                <a class="button is-white is-outlined" href="#">
+                                    <span class="icon">
+                                        <i class="fa fa-superpowers"></i>
+                                    </span>
+                                    <span>Examples</span>
+                                </a>
+                            </span>
+                            <span class="navbar-item">
+                                <a class="button is-white is-outlined" href="#">
+                                    <span class="icon">
+                                        <i class="fa fa-book"></i>
+                                    </span>
+                                    <span>Documentation</span>
+                                </a>
+                            </span>
+                            <span class="navbar-item">
+                                <a class="button is-white is-outlined" href="https://github.com/chainflag/eth-faucet">
+                                    <span class="icon">
+                                        <i class="fa fa-github"></i>
+                                    </span>
+                                    <span>View Source</span>
+                                </a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            </div>
+            <div class="hero-body">
+                <div class="container has-text-centered">
+                    <div class="column is-6 is-offset-3">
+                        <h1 class="title">
+                            Receive {faucetInfo.payout} ETH per request
+                        </h1>
+                        <h2 class="subtitle">
+                          $Serving from account {faucetInfo.account}
+                        </h2>
+                        <div class="box">
+                            <div class="field is-grouped">
+                                <p class="control is-expanded">
+                                <input
+                                  bind:value={address}
+                                  class="input"
+                                  type="text"
+                                  placeholder="Enter your address"
+                                />
+                                </p>
+                                <p class="control">
+                                    <button on:click={handleRequest} class="button is-info">Request</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <div class="navbar-menu">
-      <div class="navbar-end">
-        <div class="navbar-item">
-          <div class="button">
-            <a
-              class="button is-text is-small"
-              href="https://github.com/chainflag/eth-faucet"
-              target="_blank"
-            >
-              <strong>View on Github</strong>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </nav>
-
-  <section class="section">
-    <div class="container">
-      <h1 class="title">Receive {faucetInfo.payout} ETH per request</h1>
-      <h2 class="subtitle">
-        Serving from account
-        <span class="tag is-warning is-light is-medium"
-          >{faucetInfo.account}</span
-        >
-      </h2>
-    </div>
-  </section>
-
-  <div class="container is-fluid">
-    <div class="box">
-      <div class="block">
-        <label class="label">Enter your account address</label>
-        <input
-          bind:value={address}
-          class="input"
-          type="text"
-          placeholder="0x..."
-        />
-      </div>
-      <button on:click={handleRequest} class="button is-danger">Request</button>
-    </div>
-  </div>
-
-  <footer class="footer">
-    <div class="content has-text-centered">
-      <p>
-        Powered by <a href="https://chainflag.org" target="_blank">ChainFlag</a>
-      </p>
-    </div>
-  </footer>
+    </section>
+</body>
+<script async type="text/javascript" src="../build/bulma.js"></script>
 </main>
