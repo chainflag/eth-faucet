@@ -53,40 +53,11 @@
         <div class="container">
           <div class="navbar-brand">
             <a class="navbar-item" href="../">
-              <img src="./favicon.png" alt="Logo" />
+              <img src="/favicon.png" alt="Logo" />
             </a>
-            <span class="navbar-burger burger" data-target="navbarMenu">
-              <span />
-              <span />
-              <span />
-            </span>
           </div>
           <div id="navbarMenu" class="navbar-menu">
             <div class="navbar-end">
-              <span class="navbar-item">
-                <a class="button is-white is-outlined" href="#">
-                  <span class="icon">
-                    <i class="fa fa-home" />
-                  </span>
-                  <span>Home</span>
-                </a>
-              </span>
-              <span class="navbar-item">
-                <a class="button is-white is-outlined" href="#">
-                  <span class="icon">
-                    <i class="fa fa-superpowers" />
-                  </span>
-                  <span>Examples</span>
-                </a>
-              </span>
-              <span class="navbar-item">
-                <a class="button is-white is-outlined" href="#">
-                  <span class="icon">
-                    <i class="fa fa-book" />
-                  </span>
-                  <span>Documentation</span>
-                </a>
-              </span>
               <span class="navbar-item">
                 <a
                   class="button is-white is-outlined"
@@ -103,6 +74,7 @@
         </div>
       </nav>
     </div>
+
     <div class="hero-body">
       <div class="container has-text-centered">
         <div class="column is-6 is-offset-3">
@@ -110,7 +82,7 @@
             Receive {faucetInfo.payout} ETH per request
           </h1>
           <h2 class="subtitle">
-            $Serving from account {faucetInfo.account}
+            Serving from {faucetInfo.account}
           </h2>
           <div class="box">
             <div class="field is-grouped">
@@ -123,9 +95,7 @@
                 />
               </p>
               <p class="control">
-                <button on:click={handleRequest} class="button is-info"
-                  >Request</button
-                >
+                <a on:click={handleRequest} class="button is-info"> Request </a>
               </p>
             </div>
           </div>
@@ -136,11 +106,6 @@
 </main>
 
 <style>
-  html,
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-      Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
-  }
   .hero.is-info {
     background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
       url('https://picsum.photos/1200/900') no-repeat center center fixed;
@@ -148,11 +113,6 @@
     -moz-background-size: cover;
     -o-background-size: cover;
     background-size: cover;
-  }
-  .hero .nav,
-  .hero.is-success .nav {
-    -webkit-box-shadow: none;
-    box-shadow: none;
   }
   .hero .subtitle {
     padding: 3rem 0;
