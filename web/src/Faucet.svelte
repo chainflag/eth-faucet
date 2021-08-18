@@ -22,7 +22,7 @@
     if (!isAddress(address)) {
       addNotification({
         text: 'Invalid address',
-        type: 'danger',
+        type: 'warning',
         removeAfter: 4000,
         position: 'bottom-center',
       });
@@ -36,7 +36,7 @@
       }),
     });
     let text = await res.text();
-    let type = res.ok ? 'success' : 'danger';
+    let type = res.ok ? 'success' : 'warning';
     addNotification({
       text,
       type,
@@ -95,7 +95,9 @@
                 />
               </p>
               <p class="control">
-                <a on:click={handleRequest} class="button is-info"> Request </a>
+                <button on:click={handleRequest} class="button is-info">
+                  Request
+                </button>
               </p>
             </div>
           </div>
