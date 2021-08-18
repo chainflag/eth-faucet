@@ -22,7 +22,7 @@
     if (!isAddress(address)) {
       addNotification({
         text: 'Invalid address',
-        type: 'danger',
+        type: 'warning',
         removeAfter: 4000,
         position: 'bottom-center',
       });
@@ -36,7 +36,7 @@
       }),
     });
     let text = await res.text();
-    let type = res.ok ? 'success' : 'danger';
+    let type = res.ok ? 'success' : 'warning';
     addNotification({
       text,
       type,
@@ -47,53 +47,77 @@
 </script>
 
 <main>
-  <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
-    <div class="navbar-brand">
-      <a class="navbar-item" href="/">
-        <strong>Ether Faucet</strong>
-      </a>
+  <section class="hero is-info is-fullheight">
+    <div class="hero-head">
+      <nav class="navbar">
+        <div class="container">
+          <div class="navbar-brand">
+            <a class="navbar-item" href="../">
+              <img src="/favicon.png" alt="Logo" />
+            </a>
+          </div>
+          <div id="navbarMenu" class="navbar-menu">
+            <div class="navbar-end">
+              <span class="navbar-item">
+                <a
+                  class="button is-white is-outlined"
+                  href="https://github.com/chainflag/eth-faucet"
+                >
+                  <span class="icon">
+                    <i class="fa fa-github" />
+                  </span>
+                  <span>View Source</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </nav>
     </div>
 
-    <div class="navbar-menu">
-      <div class="navbar-end">
-        <div class="navbar-item">
-          <div class="button">
-            <a
-              class="button is-text is-small"
-              href="https://github.com/chainflag/eth-faucet"
-              target="_blank"
-            >
-              <strong>View on Github</strong>
-            </a>
+    <div class="hero-body">
+      <div class="container has-text-centered">
+        <div class="column is-6 is-offset-3">
+          <h1 class="title">
+            Receive {faucetInfo.payout} ETH per request
+          </h1>
+          <h2 class="subtitle">
+            Serving from {faucetInfo.account}
+          </h2>
+          <div class="box">
+            <div class="field is-grouped">
+              <p class="control is-expanded">
+                <input
+                  bind:value={address}
+                  class="input"
+                  type="text"
+                  placeholder="Enter your address"
+                />
+              </p>
+              <p class="control">
+                <button on:click={handleRequest} class="button is-info">
+                  Request
+                </button>
+              </p>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </nav>
-
-  <section class="section">
-    <div class="container">
-      <h1 class="title">Receive {faucetInfo.payout} ETH per request</h1>
-      <h2 class="subtitle">
-        Serving from account
-        <span class="tag is-light is-medium">{faucetInfo.account}</span>
-      </h2>
-    </div>
   </section>
-
-  <div class="container is-fluid">
-    <div class="box">
-      <div class="block">
-        <label class="label">Enter your account address</label>
-        <input
-          bind:value={address}
-          class="input"
-          type="text"
-          placeholder="0x..."
-        />
-      </div>
-      <button on:click={handleRequest} class="button is-primary">Request</button
-      >
-    </div>
-  </div>
 </main>
+
+<style>
+  .hero.is-info {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+      url('https://picsum.photos/1200/900') no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+  }
+  .hero .subtitle {
+    padding: 3rem 0;
+    line-height: 1.5;
+  }
+</style>
