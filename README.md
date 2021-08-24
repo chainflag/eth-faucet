@@ -12,6 +12,7 @@ The faucet is a web application with the goal of distributing small amounts of E
 1. Clone the repository
 ```bash
 git clone https://github.com/chainflag/eth-faucet.git
+cd eth-faucet
 ```
 
 2. Bundle web using rollup
@@ -41,7 +42,7 @@ then start the faucet server
 
 or run faucet using docker without the compiled binary  
 ```bash
-docker run -d -p 8080:8080 -v `pwd`/config.yml:/app/config.yml chainflag/eth-faucet
+docker run -d -p 8080:8080 -v `pwd`/config.yml:/app/config.yml -v `pwd`/keystore:/app/keystore chainflag/eth-faucet
 ```
 
 ## License
