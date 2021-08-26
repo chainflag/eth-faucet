@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { isAddress } from '@ethersproject/address';
+  import { getAddress } from '@ethersproject/address';
   import { formatEther } from '@ethersproject/units';
   import { getNotificationsContext } from 'svelte-notifications';
 
@@ -19,9 +19,11 @@
   });
 
   async function handleRequest() {
-    if (!isAddress(address)) {
+    try {
+      address = getAddress(address);
+    } catch (error) {
       addNotification({
-        text: 'Invalid address',
+        text: error.reason,
         type: 'warning',
         removeAfter: 4000,
         position: 'bottom-center',
