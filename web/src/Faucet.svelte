@@ -54,8 +54,11 @@
       <nav class="navbar">
         <div class="container">
           <div class="navbar-brand">
-            <a class="navbar-item" href="../">
-              <img src="/favicon.png" alt="Logo" />
+            <a class="navbar-item" href=".">
+              <span class="icon">
+                <i class="fa fa-bath" />
+              </span>
+              <span><b>ETH Faucet</b></span>
             </a>
           </div>
           <div id="navbarMenu" class="navbar-menu">
