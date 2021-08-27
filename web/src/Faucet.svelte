@@ -94,13 +94,16 @@
               <p class="control is-expanded">
                 <input
                   bind:value={address}
-                  class="input"
+                  class="input is-rounded"
                   type="text"
                   placeholder="Enter your address"
                 />
               </p>
               <p class="control">
-                <button on:click={handleRequest} class="button is-info">
+                <button
+                  on:click={handleRequest}
+                  class="button is-primary is-rounded"
+                >
                   Request
                 </button>
               </p>
@@ -124,5 +127,8 @@
   .hero .subtitle {
     padding: 3rem 0;
     line-height: 1.5;
+  }
+  .box {
+    border-radius: 19px;
   }
 </style>
