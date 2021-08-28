@@ -1,6 +1,6 @@
 <script>
-  import 'bulma/css/bulma.min.css';
-  import Notifications from 'svelte-notifications';
+  import 'animate.css';
+  import 'bulma/css/bulma.css';
   import Faucet from './Faucet.svelte';
 </script>
 
@@ -12,6 +12,4 @@
   />
 </svelte:head>
 
-<Notifications>
-  <Faucet />
-</Notifications>
+<Faucet />

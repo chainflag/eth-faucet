@@ -2,9 +2,7 @@
   import { onMount } from 'svelte';
   import { getAddress } from '@ethersproject/address';
   import { formatEther } from '@ethersproject/units';
-  import { getNotificationsContext } from 'svelte-notifications';
-
-  const { addNotification } = getNotificationsContext();
+  import { setDefaults as setToast, toast } from 'bulma-toast';
 
   let address = null;
   let faucetInfo = {
@@ -18,16 +16,19 @@
     faucetInfo.payout = parseInt(formatEther(faucetInfo.payout));
   });
 
+  setToast({
+    position: 'bottom-center',
+    dismissible: true,
+    pauseOnHover: true,
+    closeOnClick: false,
+    animate: { in: 'fadeIn', out: 'fadeOut' },
+  });
+
   async function handleRequest() {
     try {
       address = getAddress(address);
     } catch (error) {
-      addNotification({
-        text: error.reason,
-        type: 'warning',
-        removeAfter: 4000,
-        position: 'bottom-center',
-      });
+      toast({ message: error.reason, type: 'is-warning' });
       return;
     }
 
@@ -37,14 +38,9 @@
         address,
       }),
     });
-    let text = await res.text();
-    let type = res.ok ? 'success' : 'warning';
-    addNotification({
-      text,
-      type,
-      removeAfter: 4000,
-      position: 'bottom-center',
-    });
+    let message = await res.text();
+    let type = res.ok ? 'is-success' : 'is-warning';
+    toast({ message, type });
   }
 </script>
 
