@@ -38,19 +38,22 @@ func (l *Limiter) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Ha
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	if _, ttl, err := l.cache.GetWithTTL(address); err == nil {
-		http.Error(w, fmt.Sprintf("you have exceeded the rate limit. %v", ttl), http.StatusTooManyRequests)
-		return
-	}
-	if _, ttl, err := l.cache.GetWithTTL(ip); err == nil {
-		http.Error(w, fmt.Sprintf("you have exceeded the rate limit. %v", ttl), http.StatusTooManyRequests)
+	if l.limitByKey(w, address) || l.limitByKey(w, ip) {
 		return
 	}
 
 	next.ServeHTTP(w, r)
 	l.cache.SetWithTTL(address, true, l.ttl)
 	l.cache.SetWithTTL(ip, true, l.ttl)
+}
+
+func (l *Limiter) limitByKey(w http.ResponseWriter, key string) bool {
+	if _, ttl, err := l.cache.GetWithTTL(key); err == nil {
+		errMsg := fmt.Sprintf("You have exceeded the rate limit. Please wait %s before you try again", ttl.Round(time.Second))
+		http.Error(w, errMsg, http.StatusTooManyRequests)
+		return true
+	}
+	return false
 }
 
 func getIP(r *http.Request) (string, error) {

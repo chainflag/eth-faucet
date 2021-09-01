@@ -31,7 +31,7 @@ func NewServer(faucet *faucet) *server {
 
 func (s *server) routes() {
 	s.router.Handle("/", http.FileServer(web.Dist()))
-	s.router.Handle("/api/claim", negroni.New(NewLimiter(time.Minute), negroni.Wrap(s.handleClaim())))
+	s.router.Handle("/api/claim", negroni.New(NewLimiter(60*time.Second), negroni.Wrap(s.handleClaim())))
 	s.router.Handle("/api/info", s.handleInfo())
 }
 
