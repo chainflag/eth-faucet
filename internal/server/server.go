@@ -3,14 +3,15 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
-	"regexp"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
 
+	"github.com/chainflag/eth-faucet/internal/chain"
 	"github.com/chainflag/eth-faucet/web"
 )
 
@@ -43,33 +44,24 @@ func (s server) Start(port int) {
 }
 
 func (s server) handleClaim() http.HandlerFunc {
-	type claimReq struct {
-		Address string `json:"address"`
-	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			http.NotFound(w, r)
 			return
 		}
 
-		var req claimReq
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		address, err := getEthAddress(r)
+		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		re := regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
-		if len(req.Address) == 0 || !re.MatchString(req.Address) {
-			http.Error(w, "Invalid address", http.StatusBadRequest)
-			return
-		}
-
 		if !s.faucet.isEmptyQueue() {
-			if s.faucet.tryEnqueue(req.Address) {
+			if s.faucet.tryEnqueue(address) {
 				log.WithFields(log.Fields{
-					"address": req.Address,
+					"address": address,
 				}).Info("Added to queue successfully")
-				fmt.Fprintf(w, "Added %s to the queue", req.Address)
+				fmt.Fprintf(w, "Added %s to the queue", address)
 			} else {
 				log.Warn("Max queue capacity reached")
 				http.Error(w, "Faucet queue is too long, please try again later.", http.StatusServiceUnavailable)
@@ -77,7 +69,7 @@ func (s server) handleClaim() http.HandlerFunc {
 			return
 		}
 
-		txHash, err := s.faucet.Transfer(context.Background(), req.Address, s.faucet.GetPayoutWei())
+		txHash, err := s.faucet.Transfer(context.Background(), address, s.faucet.GetPayoutWei())
 		if err != nil {
 			log.WithError(err).Error("Could not send transaction")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -86,7 +78,7 @@ func (s server) handleClaim() http.HandlerFunc {
 
 		log.WithFields(log.Fields{
 			"txHash":  txHash,
-			"address": req.Address,
+			"address": address,
 		}).Info("Funded directly successfully")
 		fmt.Fprintf(w, txHash.String())
 	}
@@ -109,4 +101,19 @@ func (s server) handleInfo() http.HandlerFunc {
 			Payout:  s.faucet.GetPayoutWei().String(),
 		})
 	}
+}
+
+func getEthAddress(r *http.Request) (string, error) {
+	type claimReq struct {
+		Address string `json:"address"`
+	}
+	var req claimReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return "", err
+	}
+	if !chain.IsValidAddress(req.Address) {
+		return "", errors.New("invalid address")
+	}
+
+	return chain.ToCheckSumAddress(req.Address), nil
 }
