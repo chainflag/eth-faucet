@@ -1,19 +1,19 @@
 package server
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
 
-	"github.com/chainflag/eth-faucet/internal/chain"
 	"github.com/chainflag/eth-faucet/web"
 )
+
+const AddressKey string = "address"
 
 type server struct {
 	faucet *faucet
@@ -31,7 +31,7 @@ func NewServer(faucet *faucet) *server {
 
 func (s *server) routes() {
 	s.router.Handle("/", http.FileServer(web.Dist()))
-	s.router.Handle("/api/claim", s.handleClaim())
+	s.router.Handle("/api/claim", negroni.New(NewLimiter(time.Minute), negroni.Wrap(s.handleClaim())))
 	s.router.Handle("/api/info", s.handleInfo())
 }
 
@@ -50,12 +50,7 @@ func (s server) handleClaim() http.HandlerFunc {
 			return
 		}
 
-		address, err := getEthAddress(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
+		address := r.Context().Value(AddressKey).(string)
 		if !s.faucet.isEmptyQueue() {
 			if s.faucet.tryEnqueue(address) {
 				log.WithFields(log.Fields{
@@ -69,7 +64,7 @@ func (s server) handleClaim() http.HandlerFunc {
 			return
 		}
 
-		txHash, err := s.faucet.Transfer(context.Background(), address, s.faucet.GetPayoutWei())
+		txHash, err := s.faucet.Transfer(r.Context(), address, s.faucet.GetPayoutWei())
 		if err != nil {
 			log.WithError(err).Error("Could not send transaction")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -101,19 +96,4 @@ func (s server) handleInfo() http.HandlerFunc {
 			Payout:  s.faucet.GetPayoutWei().String(),
 		})
 	}
-}
-
-func getEthAddress(r *http.Request) (string, error) {
-	type claimReq struct {
-		Address string `json:"address"`
-	}
-	var req claimReq
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return "", err
-	}
-	if !chain.IsValidAddress(req.Address) {
-		return "", errors.New("invalid address")
-	}
-
-	return chain.ToCheckSumAddress(req.Address), nil
 }
