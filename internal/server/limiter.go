@@ -1,8 +1,6 @@
 package server
 
 import (
-	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -29,45 +27,30 @@ func NewLimiter(ttl time.Duration) *Limiter {
 }
 
 func (l *Limiter) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	address, err := getEthAddress(r)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	address := r.PostFormValue(AddressKey)
+	if !chain.IsValidAddress(address) {
+		http.Error(w, "invalid address", http.StatusBadRequest)
 		return
 	}
+	address = chain.ToCheckSumAddress(address)
 	ip, err := getIP(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if _, ttl, err := l.cache.GetWithTTL(address); err != ttlcache.ErrNotFound {
+	if _, ttl, err := l.cache.GetWithTTL(address); err == nil {
 		http.Error(w, fmt.Sprintf("you have exceeded the rate limit. %v", ttl), http.StatusTooManyRequests)
 		return
 	}
-	if _, ttl, err := l.cache.GetWithTTL(ip); err != ttlcache.ErrNotFound {
+	if _, ttl, err := l.cache.GetWithTTL(ip); err == nil {
 		http.Error(w, fmt.Sprintf("you have exceeded the rate limit. %v", ttl), http.StatusTooManyRequests)
 		return
 	}
 
-	ctx := context.WithValue(r.Context(), AddressKey, address)
-	next.ServeHTTP(w, r.WithContext(ctx))
+	next.ServeHTTP(w, r)
 	l.cache.SetWithTTL(address, true, l.ttl)
 	l.cache.SetWithTTL(ip, true, l.ttl)
-}
-
-func getEthAddress(r *http.Request) (string, error) {
-	type claimReq struct {
-		Address string `json:"address"`
-	}
-	var req claimReq
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return "", err
-	}
-	if !chain.IsValidAddress(req.Address) {
-		return "", errors.New("invalid address")
-	}
-
-	return chain.ToCheckSumAddress(req.Address), nil
 }
 
 func getIP(r *http.Request) (string, error) {

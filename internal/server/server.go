@@ -50,7 +50,7 @@ func (s server) handleClaim() http.HandlerFunc {
 			return
 		}
 
-		address := r.Context().Value(AddressKey).(string)
+		address := r.PostFormValue(AddressKey)
 		if !s.faucet.isEmptyQueue() {
 			if s.faucet.tryEnqueue(address) {
 				log.WithFields(log.Fields{
@@ -80,7 +80,7 @@ func (s server) handleClaim() http.HandlerFunc {
 }
 
 func (s server) handleInfo() http.HandlerFunc {
-	type infoResp struct {
+	type info struct {
 		Account string `json:"account"`
 		Payout  string `json:"payout"`
 	}
@@ -91,7 +91,7 @@ func (s server) handleInfo() http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(infoResp{
+		json.NewEncoder(w).Encode(info{
 			Account: s.faucet.Sender().String(),
 			Payout:  s.faucet.GetPayoutWei().String(),
 		})
