@@ -32,11 +32,11 @@
       return;
     }
 
+    let formData = new FormData();
+    formData.append('address', address);
     const res = await fetch('/api/claim', {
       method: 'POST',
-      body: JSON.stringify({
-        address,
-      }),
+      body: formData,
     });
     let message = await res.text();
     let type = res.ok ? 'is-success' : 'is-warning';
