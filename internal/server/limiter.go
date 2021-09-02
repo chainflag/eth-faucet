@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ReneKroon/ttlcache/v2"
+	"github.com/urfave/negroni"
 
 	"github.com/chainflag/eth-faucet/internal/chain"
 )
@@ -43,8 +44,10 @@ func (l *Limiter) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Ha
 	}
 
 	next.ServeHTTP(w, r)
-	l.cache.SetWithTTL(address, true, l.ttl)
-	l.cache.SetWithTTL(ip, true, l.ttl)
+	if w.(negroni.ResponseWriter).Status() == http.StatusOK {
+		l.cache.SetWithTTL(address, true, l.ttl)
+		l.cache.SetWithTTL(ip, true, l.ttl)
+	}
 }
 
 func (l *Limiter) limitByKey(w http.ResponseWriter, key string) bool {
