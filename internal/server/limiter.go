@@ -29,11 +29,10 @@ func NewLimiter(ttl time.Duration) *Limiter {
 
 func (l *Limiter) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	address := r.PostFormValue(AddressKey)
-	if !chain.IsValidAddress(address) {
+	if !chain.IsValidAddress(address, true) {
 		http.Error(w, "invalid address", http.StatusBadRequest)
 		return
 	}
-	address = chain.ToCheckSumAddress(address)
 	ip, err := getIP(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
