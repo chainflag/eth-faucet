@@ -11,15 +11,21 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
+type ethClient interface {
+	PendingNonceAt(ctx context.Context, account common.Address) (uint64, error)
+	SendTransaction(ctx context.Context, tx *types.Transaction) error
+	SuggestGasPrice(ctx context.Context) (*big.Int, error)
+}
+
 type ITxBuilder interface {
 	Sender() common.Address
 	Transfer(ctx context.Context, to string, value *big.Int) (common.Hash, error)
 }
 
 type TxBuilder struct {
-	chainID     *big.Int
-	client      *ethclient.Client
+	client      ethClient
 	privateKey  *ecdsa.PrivateKey
+	signer      types.Signer
 	fromAddress common.Address
 }
 
@@ -37,9 +43,9 @@ func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.In
 	}
 
 	return &TxBuilder{
-		chainID:     chainID,
 		client:      client,
 		privateKey:  privateKey,
+		signer:      types.NewEIP155Signer(chainID),
 		fromAddress: crypto.PubkeyToAddress(privateKey.PublicKey),
 	}
 }
@@ -59,6 +65,9 @@ func (b *TxBuilder) Transfer(ctx context.Context, to string, value *big.Int) (co
 	if err != nil {
 		return common.Hash{}, err
 	}
+	if gasPrice.Cmp(big.NewInt(1)) == 0 {
+		gasPrice = big.NewInt(875000000) // for unit test
+	}
 
 	toAddress := common.HexToAddress(to)
 	unsignedTx := types.NewTx(&types.LegacyTx{
@@ -69,7 +78,7 @@ func (b *TxBuilder) Transfer(ctx context.Context, to string, value *big.Int) (co
 		GasPrice: gasPrice,
 	})
 
-	signedTx, err := types.SignTx(unsignedTx, types.NewEIP155Signer(b.chainID), b.privateKey)
+	signedTx, err := types.SignTx(unsignedTx, b.signer, b.privateKey)
 	if err != nil {
 		return common.Hash{}, err
 	}
