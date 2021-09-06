@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -10,40 +11,53 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
 
+	"github.com/chainflag/eth-faucet/internal/chain"
 	"github.com/chainflag/eth-faucet/web"
 )
 
 const AddressKey string = "address"
 
-type server struct {
-	faucet *faucet
-	router *http.ServeMux
+type Server struct {
+	chain.ITxBuilder
+	config *Config
+	queue  chan string
 }
 
-func NewServer(faucet *faucet) *server {
-	server := &server{
-		faucet: faucet,
-		router: http.NewServeMux(),
+func NewServer(txBuilder chain.ITxBuilder, config *Config) *Server {
+	return &Server{
+		ITxBuilder: txBuilder,
+		config:     config,
+		queue:      make(chan string, config.queueCap),
 	}
-	server.routes()
-	return server
 }
 
-func (s *server) routes() {
-	s.router.Handle("/", http.FileServer(web.Dist()))
-	s.router.Handle("/api/claim", negroni.New(NewLimiter(60*time.Second), negroni.Wrap(s.handleClaim())))
-	s.router.Handle("/api/info", s.handleInfo())
-}
-
-func (s server) Start(port int) {
+func (s *Server) Run() {
+	router := http.NewServeMux()
+	router.Handle("/", http.FileServer(web.Dist()))
+	router.Handle("/api/claim", negroni.New(NewLimiter(60*time.Second), negroni.Wrap(s.handleClaim())))
+	router.Handle("/api/info", s.handleInfo())
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
-	n.UseHandler(s.router)
+	n.UseHandler(router)
 
-	log.Infof("Starting http server %d", port)
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), n))
+	go func() {
+		for address := range s.queue {
+			txHash, err := s.Transfer(context.Background(), address, s.config.payout)
+			if err != nil {
+				log.WithError(err).Error("Failed to handle transaction in the queue")
+			} else {
+				log.WithFields(log.Fields{
+					"txHash":  txHash,
+					"address": address,
+				}).Info("Consume from queue successfully")
+			}
+		}
+	}()
+
+	log.Infof("Starting http server %d", s.config.port)
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.config.port), n))
 }
 
-func (s server) handleClaim() http.HandlerFunc {
+func (s *Server) handleClaim() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			http.NotFound(w, r)
@@ -51,20 +65,21 @@ func (s server) handleClaim() http.HandlerFunc {
 		}
 
 		address := r.PostFormValue(AddressKey)
-		if !s.faucet.isEmptyQueue() {
-			if s.faucet.tryEnqueue(address) {
+		if len(s.queue) != 0 {
+			select {
+			case s.queue <- address:
 				log.WithFields(log.Fields{
 					"address": address,
 				}).Info("Added to queue successfully")
 				fmt.Fprintf(w, "Added %s to the queue", address)
-			} else {
+			default:
 				log.Warn("Max queue capacity reached")
 				http.Error(w, "Faucet queue is too long, please try again later.", http.StatusServiceUnavailable)
 			}
 			return
 		}
 
-		txHash, err := s.faucet.Transfer(r.Context(), address, s.faucet.GetPayoutWei())
+		txHash, err := s.Transfer(r.Context(), address, s.config.payout)
 		if err != nil {
 			log.WithError(err).Error("Could not send transaction")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -79,7 +94,7 @@ func (s server) handleClaim() http.HandlerFunc {
 	}
 }
 
-func (s server) handleInfo() http.HandlerFunc {
+func (s *Server) handleInfo() http.HandlerFunc {
 	type info struct {
 		Account string `json:"account"`
 		Payout  string `json:"payout"`
@@ -92,8 +107,8 @@ func (s server) handleInfo() http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(info{
-			Account: s.faucet.Sender().String(),
-			Payout:  s.faucet.GetPayoutWei().String(),
+			Account: s.Sender().String(),
+			Payout:  s.config.payout.String(),
 		})
 	}
 }

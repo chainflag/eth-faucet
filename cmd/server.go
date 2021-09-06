@@ -14,13 +14,6 @@ import (
 	"github.com/chainflag/eth-faucet/internal/server"
 )
 
-type config struct {
-	Provider   string
-	Payout     int
-	QueueCap   int
-	PrivateKey *ecdsa.PrivateKey
-}
-
 var port int
 
 func init() {
@@ -28,48 +21,34 @@ func init() {
 	flag.Parse()
 }
 
-func initConfig() *config {
+func Execute() {
 	v := viper.New()
 	v.SetConfigFile("config.yml")
 	if err := v.ReadInConfig(); err != nil {
 		panic(err)
 	}
 
-	privateKey, err := func(walletConf map[string]string) (*ecdsa.PrivateKey, error) {
-		if walletConf["privkey"] != "" {
-			return crypto.HexToECDSA(walletConf["privkey"])
-		}
-
-		keyfile, err := chain.ResolveKeyfilePath(walletConf["keystore"])
-		if err != nil {
-			panic(err)
-		}
-
-		return chain.DecryptPrivateKey(keyfile, walletConf["password"])
-	}(v.GetStringMapString("wallet"))
-
+	privateKey, err := getPrivateKey(v.GetStringMapString("wallet"))
 	if err != nil {
 		panic(fmt.Errorf("failed to read private key: %w", err))
 	}
 
-	return &config{
-		Provider:   v.GetString("provider"),
-		Payout:     v.GetInt("payout"),
-		QueueCap:   v.GetInt("queuecap"),
-		PrivateKey: privateKey,
-	}
-}
-
-func Execute() {
-	conf := initConfig()
-	faucet := server.NewFaucet(chain.NewTxBuilder(conf.Provider, conf.PrivateKey, nil), conf.QueueCap)
-	faucet.SetPayoutEther(conf.Payout)
-	defer faucet.Close()
-
-	go faucet.Run()
-	go server.NewServer(faucet).Start(port)
+	txBuilder := chain.NewTxBuilder(v.GetString("provider"), privateKey, nil)
+	config := server.NewConfig(v.GetInt("payout"), v.GetInt("queuecap"), port)
+	go server.NewServer(txBuilder, config).Run()
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	<-c
+}
+
+func getPrivateKey(walletConf map[string]string) (*ecdsa.PrivateKey, error) {
+	if walletConf["privkey"] != "" {
+		return crypto.HexToECDSA(walletConf["privkey"])
+	}
+	keyfile, err := chain.ResolveKeyfilePath(walletConf["keystore"])
+	if err != nil {
+		panic(err)
+	}
+	return chain.DecryptPrivateKey(keyfile, walletConf["password"])
 }
