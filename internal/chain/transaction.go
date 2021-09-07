@@ -65,9 +65,6 @@ func (b *TxBuilder) Transfer(ctx context.Context, to string, value *big.Int) (co
 	if err != nil {
 		return common.Hash{}, err
 	}
-	if gasPrice.Cmp(big.NewInt(1)) == 0 {
-		gasPrice = big.NewInt(875000000) // for unit test
-	}
 
 	toAddress := common.HexToAddress(to)
 	unsignedTx := types.NewTx(&types.LegacyTx{

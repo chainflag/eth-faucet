@@ -3,8 +3,10 @@ package chain
 import (
 	"context"
 	"math/big"
+	"reflect"
 	"testing"
 
+	"github.com/agiledragon/gomonkey"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind/backends"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
@@ -21,11 +23,16 @@ func TestTxBuilder(t *testing.T) {
 		}, 10000000,
 	)
 	defer simClient.Close()
+	var s *backends.SimulatedBackend
+	patches := gomonkey.ApplyMethod(reflect.TypeOf(s), "SuggestGasPrice", func(_ *backends.SimulatedBackend, _ context.Context) (*big.Int, error) {
+		return big.NewInt(875000000), nil
+	})
+	defer patches.Reset()
 
 	txBuilder := &TxBuilder{
 		client:      simClient,
 		privateKey:  privateKey,
-		signer:      types.HomesteadSigner{},
+		signer:      types.NewEIP155Signer(big.NewInt(1337)),
 		fromAddress: crypto.PubkeyToAddress(privateKey.PublicKey),
 	}
 	bgCtx := context.Background()
