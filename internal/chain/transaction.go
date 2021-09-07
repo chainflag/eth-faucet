@@ -5,17 +5,12 @@ import (
 	"crypto/ecdsa"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
-
-type ethClient interface {
-	PendingNonceAt(ctx context.Context, account common.Address) (uint64, error)
-	SendTransaction(ctx context.Context, tx *types.Transaction) error
-	SuggestGasPrice(ctx context.Context) (*big.Int, error)
-}
 
 type ITxBuilder interface {
 	Sender() common.Address
@@ -23,7 +18,7 @@ type ITxBuilder interface {
 }
 
 type TxBuilder struct {
-	client      ethClient
+	client      bind.ContractTransactor
 	privateKey  *ecdsa.PrivateKey
 	signer      types.Signer
 	fromAddress common.Address
