@@ -29,7 +29,7 @@ func TestTxBuilder(t *testing.T) {
 	})
 	defer patches.Reset()
 
-	txBuilder := &TxBuilder{
+	txBuilder := &TxBuild{
 		client:      simClient,
 		privateKey:  privateKey,
 		signer:      types.NewEIP155Signer(big.NewInt(1337)),

@@ -18,16 +18,16 @@ import (
 const AddressKey string = "address"
 
 type Server struct {
-	chain.ITxBuilder
+	chain.TxBuilder
 	config *Config
 	queue  chan string
 }
 
-func NewServer(txBuilder chain.ITxBuilder, config *Config) *Server {
+func NewServer(txBuilder chain.TxBuilder, config *Config) *Server {
 	return &Server{
-		ITxBuilder: txBuilder,
-		config:     config,
-		queue:      make(chan string, config.queueCap),
+		TxBuilder: txBuilder,
+		config:    config,
+		queue:     make(chan string, config.queueCap),
 	}
 }
 

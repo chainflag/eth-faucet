@@ -12,19 +12,19 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-type ITxBuilder interface {
+type TxBuilder interface {
 	Sender() common.Address
 	Transfer(ctx context.Context, to string, value *big.Int) (common.Hash, error)
 }
 
-type TxBuilder struct {
+type TxBuild struct {
 	client      bind.ContractTransactor
 	privateKey  *ecdsa.PrivateKey
 	signer      types.Signer
 	fromAddress common.Address
 }
 
-func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.Int) ITxBuilder {
+func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.Int) TxBuilder {
 	client, err := ethclient.Dial(provider)
 	if err != nil {
 		panic(err)
@@ -37,7 +37,7 @@ func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.In
 		}
 	}
 
-	return &TxBuilder{
+	return &TxBuild{
 		client:      client,
 		privateKey:  privateKey,
 		signer:      types.NewEIP155Signer(chainID),
@@ -45,11 +45,11 @@ func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.In
 	}
 }
 
-func (b *TxBuilder) Sender() common.Address {
+func (b *TxBuild) Sender() common.Address {
 	return b.fromAddress
 }
 
-func (b *TxBuilder) Transfer(ctx context.Context, to string, value *big.Int) (common.Hash, error) {
+func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (common.Hash, error) {
 	nonce, err := b.client.PendingNonceAt(ctx, b.Sender())
 	if err != nil {
 		return common.Hash{}, err
