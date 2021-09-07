@@ -19,29 +19,30 @@ const AddressKey string = "address"
 
 type Server struct {
 	chain.TxBuilder
-	config *Config
-	queue  chan string
+	cfg   *Config
+	queue chan string
 }
 
-func NewServer(txBuilder chain.TxBuilder, config *Config) *Server {
+func NewServer(builder chain.TxBuilder, cfg *Config) *Server {
 	return &Server{
-		TxBuilder: txBuilder,
-		config:    config,
-		queue:     make(chan string, config.queueCap),
+		TxBuilder: builder,
+		cfg:       cfg,
+		queue:     make(chan string, cfg.queueCap),
 	}
 }
 
 func (s *Server) Run() {
 	router := http.NewServeMux()
 	router.Handle("/", http.FileServer(web.Dist()))
-	router.Handle("/api/claim", negroni.New(NewLimiter(60*time.Second), negroni.Wrap(s.handleClaim())))
+	limiter := NewLimiter(s.cfg.interval * time.Minute)
+	router.Handle("/api/claim", negroni.New(limiter, negroni.Wrap(s.handleClaim())))
 	router.Handle("/api/info", s.handleInfo())
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
 	n.UseHandler(router)
 
 	go func() {
 		for address := range s.queue {
-			txHash, err := s.Transfer(context.Background(), address, s.config.payout)
+			txHash, err := s.Transfer(context.Background(), address, s.cfg.payout)
 			if err != nil {
 				log.WithError(err).Error("Failed to handle transaction in the queue")
 			} else {
@@ -53,8 +54,8 @@ func (s *Server) Run() {
 		}
 	}()
 
-	log.Infof("Starting http server %d", s.config.port)
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.config.port), n))
+	log.Infof("Starting http server %d", s.cfg.apiPort)
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.cfg.apiPort), n))
 }
 
 func (s *Server) handleClaim() http.HandlerFunc {
@@ -79,7 +80,7 @@ func (s *Server) handleClaim() http.HandlerFunc {
 			return
 		}
 
-		txHash, err := s.Transfer(r.Context(), address, s.config.payout)
+		txHash, err := s.Transfer(r.Context(), address, s.cfg.payout)
 		if err != nil {
 			log.WithError(err).Error("Could not send transaction")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -108,7 +109,7 @@ func (s *Server) handleInfo() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(info{
 			Account: s.Sender().String(),
-			Payout:  s.config.payout.String(),
+			Payout:  s.cfg.payout.String(),
 		})
 	}
 }

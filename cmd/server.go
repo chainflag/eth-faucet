@@ -14,16 +14,18 @@ import (
 	"github.com/chainflag/eth-faucet/internal/server"
 )
 
-var port int
-
-func init() {
-	flag.IntVar(&port, "port", 8080, "listen port")
-	flag.Parse()
-}
+var (
+	apiPortFlag  = flag.Int("apiport", 8080, "Listener port to serve HTTP connection")
+	configFlag   = flag.String("config", "config.yml", "Path of wallet config yaml file")
+	intervalFlag = flag.Int("interval", 1440, "Number of minutes to wait between funding rounds")
+	payoutFlag   = flag.Int("payout", 1, "Number of Ethers to transfer per user request")
+	queueCapFlag = flag.Int("queuecap", 100, "Maximum transactions waiting to be sent")
+)
 
 func Execute() {
+	flag.Parse()
 	v := viper.New()
-	v.SetConfigFile("config.yml")
+	v.SetConfigFile(*configFlag)
 	if err := v.ReadInConfig(); err != nil {
 		panic(err)
 	}
@@ -34,7 +36,7 @@ func Execute() {
 	}
 
 	txBuilder := chain.NewTxBuilder(v.GetString("provider"), privateKey, nil)
-	config := server.NewConfig(v.GetInt("payout"), v.GetInt("queuecap"), port)
+	config := server.NewConfig(*apiPortFlag, *intervalFlag, *payoutFlag, *queueCapFlag)
 	go server.NewServer(txBuilder, config).Run()
 
 	c := make(chan os.Signal, 1)
