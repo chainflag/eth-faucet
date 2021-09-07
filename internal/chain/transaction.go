@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -17,9 +18,9 @@ type ITxBuilder interface {
 }
 
 type TxBuilder struct {
-	chainID     *big.Int
-	client      *ethclient.Client
+	client      bind.ContractTransactor
 	privateKey  *ecdsa.PrivateKey
+	signer      types.Signer
 	fromAddress common.Address
 }
 
@@ -37,9 +38,9 @@ func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.In
 	}
 
 	return &TxBuilder{
-		chainID:     chainID,
 		client:      client,
 		privateKey:  privateKey,
+		signer:      types.NewEIP155Signer(chainID),
 		fromAddress: crypto.PubkeyToAddress(privateKey.PublicKey),
 	}
 }
@@ -69,7 +70,7 @@ func (b *TxBuilder) Transfer(ctx context.Context, to string, value *big.Int) (co
 		GasPrice: gasPrice,
 	})
 
-	signedTx, err := types.SignTx(unsignedTx, types.NewEIP155Signer(b.chainID), b.privateKey)
+	signedTx, err := types.SignTx(unsignedTx, b.signer, b.privateKey)
 	if err != nil {
 		return common.Hash{}, err
 	}
