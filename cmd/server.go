@@ -8,7 +8,7 @@ import (
 	"os/signal"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 
 	"github.com/chainflag/eth-faucet/internal/chain"
 	"github.com/chainflag/eth-faucet/internal/server"
@@ -22,20 +22,21 @@ var (
 	queueCapFlag = flag.Int("queuecap", 100, "Maximum transactions waiting to be sent")
 )
 
-func Execute() {
+func init() {
 	flag.Parse()
-	v := viper.New()
-	v.SetConfigFile(*configFlag)
-	if err := v.ReadInConfig(); err != nil {
+}
+
+func Execute() {
+	wallet := &Wallet{}
+	if err := loadWallet(*configFlag, wallet); err != nil {
 		panic(err)
 	}
-
-	privateKey, err := getPrivateKey(v.GetStringMapString("wallet"))
+	privateKey, err := wallet.readPrivateKey()
 	if err != nil {
 		panic(fmt.Errorf("failed to read private key: %w", err))
 	}
 
-	txBuilder := chain.NewTxBuilder(v.GetString("provider"), privateKey, nil)
+	txBuilder := chain.NewTxBuilder(wallet.Provider, privateKey, nil)
 	config := server.NewConfig(*apiPortFlag, *intervalFlag, *payoutFlag, *queueCapFlag)
 	go server.NewServer(txBuilder, config).Run()
 
@@ -44,13 +45,33 @@ func Execute() {
 	<-c
 }
 
-func getPrivateKey(walletConf map[string]string) (*ecdsa.PrivateKey, error) {
-	if walletConf["privkey"] != "" {
-		return crypto.HexToECDSA(walletConf["privkey"])
+type Wallet struct {
+	Provider string
+	Wallet   struct {
+		PrivateKey string `yaml:"privkey"`
+		Keystore   string `yaml:"keystore"`
+		Password   string `yaml:"password"`
 	}
-	keyfile, err := chain.ResolveKeyfilePath(walletConf["keystore"])
+}
+
+func loadWallet(path string, wallet *Wallet) error {
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	return yaml.NewDecoder(file).Decode(wallet)
+}
+
+func (w Wallet) readPrivateKey() (*ecdsa.PrivateKey, error) {
+	wallet := w.Wallet
+	if wallet.PrivateKey != "" {
+		return crypto.HexToECDSA(wallet.PrivateKey)
+	}
+	keyfile, err := chain.ResolveKeyfilePath(wallet.Keystore)
 	if err != nil {
 		panic(err)
 	}
-	return chain.DecryptPrivateKey(keyfile, walletConf["password"])
+	return chain.DecryptPrivateKey(keyfile, wallet.Password)
 }
