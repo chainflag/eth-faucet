@@ -1,0 +1,21 @@
+{
+  "name": "eth-faucet",
+  "repository": "https://github.com/chainflag/eth-faucet",
+  "env": {
+    "WEB3_PROVIDER": {
+      "description": "JSON-RPC endpoint uri to an Ethereum node",
+      "value": "https://ropsten.infura.io"
+    },
+    "PRIVATE_KEY": {
+      "description": "Private key hex string of the faucet sender"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    },
+    {
+      "url": "heroku/go"
+    }
+  ]
+}
