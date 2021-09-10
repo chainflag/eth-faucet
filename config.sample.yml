@@ -1,5 +1,0 @@
-provider: "http://geth:8545"
-wallet:
-  privkey: ""
-  keystore: "keystore"
-  password: "secret"

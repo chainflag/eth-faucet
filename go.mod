@@ -8,5 +8,4 @@ require (
 	github.com/ethereum/go-ethereum v1.10.8
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/negroni v1.0.0
-	gopkg.in/yaml.v2 v2.4.0
 )
