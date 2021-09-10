@@ -37,14 +37,12 @@ cd eth-faucet
 
 2. Bundle Front-end web with Rollup
 ```bash
-cd web && npm install
 npm run build
 ```
 _For more details, please refer to the [web readme](https://github.com/chainflag/eth-faucet/blob/main/web/README.md)_  
 
 3. Build binary application to run
 ```bash
-cd ..
 go build -o eth-faucet main.go
 export WEB3_PROVIDER=https://ropsten.infura.io
 export PRIVATE_KEY=secret

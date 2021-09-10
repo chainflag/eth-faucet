@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "build": "cd web && npm ci --production=false && npx rollup -c"
+  }
+}
