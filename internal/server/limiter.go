@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -61,7 +62,10 @@ func (l *Limiter) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Ha
 		return
 	}
 
-	next.ServeHTTP(w, r)
+	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+	defer cancel()
+
+	next.ServeHTTP(w, r.WithContext(ctx))
 	if w.(negroni.ResponseWriter).Status() == http.StatusOK {
 		l.cache.SetWithTTL(address, true, l.ttl)
 		l.cache.SetWithTTL(clintIP, true, l.ttl)
