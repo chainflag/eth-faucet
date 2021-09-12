@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -16,38 +15,19 @@ import (
 	"github.com/chainflag/eth-faucet/internal/chain"
 )
 
-var cidrs []*net.IPNet
-
-func init() {
-	maxCidrBlocks := []string{
-		"127.0.0.1/8",    // localhost
-		"10.0.0.0/8",     // 24-bit block
-		"172.16.0.0/12",  // 20-bit block
-		"192.168.0.0/16", // 16-bit block
-		"169.254.0.0/16", // link local address
-		"::1/128",        // localhost IPv6
-		"fc00::/7",       // unique local address IPv6
-		"fe80::/10",      // link local address IPv6
-	}
-
-	cidrs = make([]*net.IPNet, len(maxCidrBlocks))
-	for i, maxCidrBlock := range maxCidrBlocks {
-		_, cidr, _ := net.ParseCIDR(maxCidrBlock)
-		cidrs[i] = cidr
-	}
-}
-
 type Limiter struct {
-	cache *ttlcache.Cache
-	ttl   time.Duration
+	cache      *ttlcache.Cache
+	proxyCount int
+	ttl        time.Duration
 }
 
-func NewLimiter(ttl time.Duration) *Limiter {
+func NewLimiter(proxyCount int, ttl time.Duration) *Limiter {
 	cache := ttlcache.NewCache()
 	cache.SkipTTLExtensionOnHit(true)
 	return &Limiter{
-		cache: cache,
-		ttl:   ttl,
+		cache:      cache,
+		proxyCount: proxyCount,
+		ttl:        ttl,
 	}
 }
 
@@ -57,7 +37,7 @@ func (l *Limiter) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Ha
 		http.Error(w, "invalid address", http.StatusBadRequest)
 		return
 	}
-	clintIP := getClientIPFromRequest(r)
+	clintIP := getClientIPFromRequest(l.proxyCount, r)
 	if l.limitByKey(w, address) || l.limitByKey(w, clintIP) {
 		return
 	}
@@ -85,39 +65,29 @@ func (l *Limiter) limitByKey(w http.ResponseWriter, key string) bool {
 	return false
 }
 
-// https://en.wikipedia.org/wiki/Private_network
-func isPrivateAddress(address string) (bool, error) {
-	ipAddress := net.ParseIP(address)
-	if ipAddress == nil {
-		return false, errors.New("address is not valid")
-	}
+func getClientIPFromRequest(proxyCount int, r *http.Request) string {
+	if proxyCount > 0 {
+		xForwardedFor := r.Header.Get("X-Forwarded-For")
+		xRealIP := r.Header.Get("X-Real-Ip")
 
-	for i := range cidrs {
-		if cidrs[i].Contains(ipAddress) {
-			return true, nil
+		if xForwardedFor != "" {
+			xForwardedForParts := strings.Split(xForwardedFor, ",")
+			// Avoid reading the user's forged request header by configuring the count of reverse proxies
+			partIndex := len(xForwardedForParts) - proxyCount
+			if partIndex < 0 {
+				partIndex = 0
+			}
+			return strings.TrimSpace(xForwardedForParts[partIndex])
+		}
+
+		if xRealIP != "" {
+			return strings.TrimSpace(xRealIP)
 		}
 	}
 
-	return false, nil
-}
-
-func getClientIPFromRequest(r *http.Request) string {
 	remoteIP, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		remoteIP = r.RemoteAddr
 	}
-	isPrivate, err := isPrivateAddress(remoteIP)
-	if !isPrivate && err == nil {
-		return remoteIP
-	}
-
-	if xForwardedFor := r.Header.Get("X-Forwarded-For"); xForwardedFor != "" {
-		maxProxyCount := 1
-		xForwardedForList := strings.Split(xForwardedFor, ",")
-		return strings.TrimSpace(xForwardedForList[len(xForwardedForList)-maxProxyCount])
-	} else if xRealIP := r.Header.Get("X-Real-Ip"); xRealIP != "" {
-		return strings.TrimSpace(xRealIP)
-	}
-
 	return remoteIP
 }

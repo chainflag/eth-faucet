@@ -34,7 +34,7 @@ func NewServer(builder chain.TxBuilder, cfg *Config) *Server {
 func (s *Server) Run() {
 	router := http.NewServeMux()
 	router.Handle("/", http.FileServer(web.Dist()))
-	limiter := NewLimiter(s.cfg.interval * time.Minute)
+	limiter := NewLimiter(s.cfg.proxyCount, s.cfg.interval*time.Minute)
 	router.Handle("/api/claim", negroni.New(limiter, negroni.Wrap(s.handleClaim())))
 	router.Handle("/api/info", s.handleInfo())
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
