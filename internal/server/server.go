@@ -31,15 +31,17 @@ func NewServer(builder chain.TxBuilder, cfg *Config) *Server {
 	}
 }
 
-func (s *Server) Run() {
+func (s *Server) setupRouter() *http.ServeMux {
 	router := http.NewServeMux()
 	router.Handle("/", http.FileServer(web.Dist()))
 	limiter := NewLimiter(s.cfg.proxyCount, s.cfg.interval*time.Minute)
 	router.Handle("/api/claim", negroni.New(limiter, negroni.Wrap(s.handleClaim())))
 	router.Handle("/api/info", s.handleInfo())
-	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
-	n.UseHandler(router)
 
+	return router
+}
+
+func (s *Server) Run() {
 	go func() {
 		for address := range s.queue {
 			txHash, err := s.Transfer(context.Background(), address, s.cfg.payout)
@@ -54,6 +56,8 @@ func (s *Server) Run() {
 		}
 	}()
 
+	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
+	n.UseHandler(s.setupRouter())
 	log.Infof("Starting http server %d", s.cfg.apiPort)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.cfg.apiPort), n))
 }
