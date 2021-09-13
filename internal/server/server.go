@@ -10,6 +10,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
+	"golang.org/x/sync/semaphore"
 
 	"github.com/chainflag/eth-faucet/internal/chain"
 	"github.com/chainflag/eth-faucet/web"
@@ -21,6 +22,7 @@ type Server struct {
 	chain.TxBuilder
 	cfg   *Config
 	queue chan string
+	sem   *semaphore.Weighted
 }
 
 func NewServer(builder chain.TxBuilder, cfg *Config) *Server {
@@ -28,6 +30,7 @@ func NewServer(builder chain.TxBuilder, cfg *Config) *Server {
 		TxBuilder: builder,
 		cfg:       cfg,
 		queue:     make(chan string, cfg.queueCap),
+		sem:       semaphore.NewWeighted(1),
 	}
 }
 
@@ -44,7 +47,9 @@ func (s *Server) setupRouter() *http.ServeMux {
 func (s *Server) Run() {
 	go func() {
 		for address := range s.queue {
+			s.sem.Acquire(context.Background(), 1)
 			txHash, err := s.Transfer(context.Background(), address, s.cfg.payout)
+			s.sem.Release(1)
 			if err != nil {
 				log.WithError(err).Error("Failed to handle transaction in the queue")
 			} else {
@@ -70,7 +75,8 @@ func (s *Server) handleClaim() http.HandlerFunc {
 		}
 
 		address := r.PostFormValue(AddressKey)
-		if len(s.queue) != 0 {
+		// The semaphore can be acquired only if the work queue is empty
+		if len(s.queue) != 0 || !s.sem.TryAcquire(1) {
 			select {
 			case s.queue <- address:
 				log.WithFields(log.Fields{
@@ -79,14 +85,16 @@ func (s *Server) handleClaim() http.HandlerFunc {
 				fmt.Fprintf(w, "Added %s to the queue", address)
 			default:
 				log.Warn("Max queue capacity reached")
-				http.Error(w, "Faucet queue is too long, please try again later.", http.StatusServiceUnavailable)
+				errMsg := "Faucet queue is too long, please try again later"
+				http.Error(w, errMsg, http.StatusServiceUnavailable)
 			}
 			return
 		}
 
 		txHash, err := s.Transfer(r.Context(), address, s.cfg.payout)
+		s.sem.Release(1)
 		if err != nil {
-			log.WithError(err).Error("Could not send transaction")
+			log.WithError(err).Error("Failed to send transaction")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
