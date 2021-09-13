@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"flag"
 	"fmt"
+	"math/big"
 	"os"
 	"os/signal"
 
@@ -13,12 +14,15 @@ import (
 	"github.com/chainflag/eth-faucet/internal/server"
 )
 
+var chainIDMap = map[string]int{"mainnet": 1, "ropsten": 3, "rinkeby": 4, "goerli": 5, "kovan": 42}
+
 var (
-	httpPortFlag = flag.Int("httpport", 8080, "Listener port to serve HTTP connection")
-	intervalFlag = flag.Int("interval", 1440, "Number of minutes to wait between funding rounds")
-	payoutFlag   = flag.Int("payout", 1, "Number of Ethers to transfer per user request")
-	proxyCntFlag = flag.Int("proxycount", 0, "Count of reverse proxies in front of the server")
-	queueCapFlag = flag.Int("queuecap", 100, "Maximum transactions waiting to be sent")
+	chainNameFlag = flag.String("chainname", "testnet", "Network name to display on the frontend")
+	httpPortFlag  = flag.Int("httpport", 8080, "Listener port to serve HTTP connection")
+	intervalFlag  = flag.Int("interval", 1440, "Number of minutes to wait between funding rounds")
+	payoutFlag    = flag.Int("payout", 1, "Number of Ethers to transfer per user request")
+	proxyCntFlag  = flag.Int("proxycount", 0, "Count of reverse proxies in front of the server")
+	queueCapFlag  = flag.Int("queuecap", 100, "Maximum transactions waiting to be sent")
 )
 
 func init() {
@@ -30,9 +34,13 @@ func Execute() {
 	if err != nil {
 		panic(fmt.Errorf("failed to read private key: %w", err))
 	}
+	var chainID *big.Int
+	if value, ok := chainIDMap[*chainNameFlag]; ok {
+		chainID = big.NewInt(int64(value))
+	}
 
-	txBuilder := chain.NewTxBuilder(os.Getenv("WEB3_PROVIDER"), privateKey, nil)
-	config := server.NewConfig(*httpPortFlag, *intervalFlag, *payoutFlag, *proxyCntFlag, *queueCapFlag)
+	txBuilder := chain.NewTxBuilder(os.Getenv("WEB3_PROVIDER"), privateKey, chainID)
+	config := server.NewConfig(*chainNameFlag, *httpPortFlag, *intervalFlag, *payoutFlag, *proxyCntFlag, *queueCapFlag)
 	go server.NewServer(txBuilder, config).Run()
 
 	c := make(chan os.Signal, 1)

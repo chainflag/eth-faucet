@@ -19,7 +19,8 @@ docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e KEYSTORE="keystore
 
 | flag        | Description                                      | Default Value
 | ----------- | ------------------------------------------------ | -------------
-| -httpport    | Listener port to serve HTTP connection           | 8080
+| -chainname  | Network name to display on the frontend          | testnet
+| -httpport   | Listener port to serve HTTP connection           | 8080
 | -interval   | Number of minutes to wait between funding rounds | 1440
 | -payout     | Number of Ethers to transfer per user request    | 1
 | -proxycount | Count of reverse proxies in front of the server  | 0

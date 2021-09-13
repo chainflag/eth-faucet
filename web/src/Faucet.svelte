@@ -7,12 +7,14 @@
   let address = null;
   let faucetInfo = {
     account: '0x0000000000000000000000000000000000000000',
+    network: 'Testnet',
     payout: 1,
   };
 
   onMount(async () => {
     const res = await fetch('/api/info');
     faucetInfo = await res.json();
+    faucetInfo.network = capitalize(faucetInfo.network);
     faucetInfo.payout = parseInt(formatEther(faucetInfo.payout));
   });
 
@@ -42,7 +44,16 @@
     let type = res.ok ? 'is-success' : 'is-warning';
     toast({ message, type });
   }
+
+  function capitalize(str) {
+    const lower = str.toLowerCase();
+    return str.charAt(0).toUpperCase() + lower.slice(1);
+  }
 </script>
+
+<svelte:head>
+  <title>ETH {faucetInfo.network} Faucet</title>
+</svelte:head>
 
 <main>
   <section class="hero is-info is-fullheight">
