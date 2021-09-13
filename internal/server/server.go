@@ -58,8 +58,8 @@ func (s *Server) Run() {
 
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
 	n.UseHandler(s.setupRouter())
-	log.Infof("Starting http server %d", s.cfg.apiPort)
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.cfg.apiPort), n))
+	log.Infof("Starting http server %d", s.cfg.httpPort)
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.cfg.httpPort), n))
 }
 
 func (s *Server) handleClaim() http.HandlerFunc {

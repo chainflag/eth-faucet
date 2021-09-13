@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	apiPortFlag  = flag.Int("apiport", 8080, "Listener port to serve HTTP connection")
+	httpPortFlag = flag.Int("httpport", 8080, "Listener port to serve HTTP connection")
 	intervalFlag = flag.Int("interval", 1440, "Number of minutes to wait between funding rounds")
 	payoutFlag   = flag.Int("payout", 1, "Number of Ethers to transfer per user request")
 	proxyCntFlag = flag.Int("proxycount", 0, "Count of reverse proxies in front of the server")
@@ -32,7 +32,7 @@ func Execute() {
 	}
 
 	txBuilder := chain.NewTxBuilder(os.Getenv("WEB3_PROVIDER"), privateKey, nil)
-	config := server.NewConfig(*apiPortFlag, *intervalFlag, *payoutFlag, *proxyCntFlag, *queueCapFlag)
+	config := server.NewConfig(*httpPortFlag, *intervalFlag, *payoutFlag, *proxyCntFlag, *queueCapFlag)
 	go server.NewServer(txBuilder, config).Run()
 
 	c := make(chan os.Signal, 1)

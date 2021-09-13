@@ -7,19 +7,19 @@ The faucet is a web application with the goal of distributing small amounts of E
 
 * Use private key as funder
 ```bash
-docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e PRIVATE_KEY="hex private key" chainflag/eth-faucet -apiport 8080
+docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e PRIVATE_KEY="hex private key" chainflag/eth-faucet -httpport 8080
 ```
 
 * Use keystore file as funder
 ```bash
-docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e KEYSTORE="keystore path" -e PASSWORD="keystore pass" -v `pwd`/keystore:/app/keystore chainflag/eth-faucet -apiport 8080
+docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e KEYSTORE="keystore path" -e PASSWORD="keystore pass" -v `pwd`/keystore:/app/keystore chainflag/eth-faucet -httpport 8080
 ```
 
 **Optional Flags**
 
 | flag        | Description                                      | Default Value
 | ----------- | ------------------------------------------------ | -------------
-| -apiport    | Listener port to serve HTTP connection           | 8080
+| -httpport    | Listener port to serve HTTP connection           | 8080
 | -interval   | Number of minutes to wait between funding rounds | 1440
 | -payout     | Number of Ethers to transfer per user request    | 1
 | -proxycount | Count of reverse proxies in front of the server  | 0
