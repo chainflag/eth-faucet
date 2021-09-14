@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ReneKroon/ttlcache/v2"
@@ -16,6 +17,7 @@ import (
 )
 
 type Limiter struct {
+	mutex      sync.Mutex
 	cache      *ttlcache.Cache
 	proxyCount int
 	ttl        time.Duration
@@ -38,22 +40,29 @@ func (l *Limiter) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Ha
 		return
 	}
 	clintIP := getClientIPFromRequest(l.proxyCount, r)
+
+	l.mutex.Lock()
 	if l.limitByKey(w, address) || l.limitByKey(w, clintIP) {
+		l.mutex.Unlock()
 		return
 	}
+	l.cache.SetWithTTL(address, true, l.ttl)
+	l.cache.SetWithTTL(clintIP, true, l.ttl)
+	l.mutex.Unlock()
 
 	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 	defer cancel()
 
 	next.ServeHTTP(w, r.WithContext(ctx))
-	if w.(negroni.ResponseWriter).Status() == http.StatusOK {
-		l.cache.SetWithTTL(address, true, l.ttl)
-		l.cache.SetWithTTL(clintIP, true, l.ttl)
-		log.WithFields(log.Fields{
-			"address":  address,
-			"clientIP": clintIP,
-		}).Info("Maximum request limit has been reached")
+	if w.(negroni.ResponseWriter).Status() != http.StatusOK {
+		l.cache.Remove(address)
+		l.cache.Remove(clintIP)
+		return
 	}
+	log.WithFields(log.Fields{
+		"address":  address,
+		"clientIP": clintIP,
+	}).Info("Maximum request limit has been reached")
 }
 
 func (l *Limiter) limitByKey(w http.ResponseWriter, key string) bool {
