@@ -46,18 +46,9 @@ func (s *Server) setupRouter() *http.ServeMux {
 
 func (s *Server) Run() {
 	go func() {
-		for address := range s.queue {
-			s.sem.Acquire(context.Background(), 1)
-			txHash, err := s.Transfer(context.Background(), address, s.cfg.payout)
-			s.sem.Release(1)
-			if err != nil {
-				log.WithError(err).Error("Failed to handle transaction in the queue")
-			} else {
-				log.WithFields(log.Fields{
-					"txHash":  txHash,
-					"address": address,
-				}).Info("Consume from queue successfully")
-			}
+		ticker := time.NewTicker(time.Second)
+		for range ticker.C {
+			s.consumeQueue()
 		}
 	}()
 
@@ -65,6 +56,27 @@ func (s *Server) Run() {
 	n.UseHandler(s.setupRouter())
 	log.Infof("Starting http server %d", s.cfg.httpPort)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.cfg.httpPort), n))
+}
+
+func (s *Server) consumeQueue() {
+	if len(s.queue) == 0 {
+		return
+	}
+
+	s.sem.Acquire(context.Background(), 1)
+	defer s.sem.Release(1)
+	for len(s.queue) != 0 {
+		address := <-s.queue
+		txHash, err := s.Transfer(context.Background(), address, s.cfg.payout)
+		if err != nil {
+			log.WithError(err).Error("Failed to handle transaction in the queue")
+		} else {
+			log.WithFields(log.Fields{
+				"txHash":  txHash,
+				"address": address,
+			}).Info("Consume from queue successfully")
+		}
+	}
 }
 
 func (s *Server) handleClaim() http.HandlerFunc {
