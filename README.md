@@ -5,14 +5,14 @@ The faucet is a web application with the goal of distributing small amounts of E
 
 ### Run with Docker
 
-* Use private key as funder
+* Use private key as sender
 ```bash
 docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e PRIVATE_KEY="hex private key" chainflag/eth-faucet -httpport 8080
 ```
 
-* Use keystore file as funder
+* Use keystore file as sender
 ```bash
-docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e KEYSTORE="keystore path" -e PASSWORD="keystore pass" -v `pwd`/keystore:/app/keystore chainflag/eth-faucet -httpport 8080
+docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e KEYSTORE="keystore path" -v `pwd`/keystore:/app/keystore -v `pwd`/password.txt:/app/password.txt chainflag/eth-faucet -httpport 8080
 ```
 
 **Optional Flags**

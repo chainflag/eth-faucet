@@ -7,12 +7,15 @@ import (
 	"math/big"
 	"os"
 	"os/signal"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/chainflag/eth-faucet/internal/chain"
 	"github.com/chainflag/eth-faucet/internal/server"
 )
+
+const DefaultKeyAuth = "password.txt"
 
 var chainIDMap = map[string]int{"mainnet": 1, "ropsten": 3, "rinkeby": 4, "goerli": 5, "kovan": 42}
 
@@ -49,12 +52,23 @@ func Execute() {
 }
 
 func getPrivateKeyFromEnv() (*ecdsa.PrivateKey, error) {
-	if os.Getenv("PRIVATE_KEY") != "" {
-		return crypto.HexToECDSA(os.Getenv("PRIVATE_KEY"))
+	if value, ok := os.LookupEnv("PRIVATE_KEY"); ok {
+		return crypto.HexToECDSA(value)
 	}
-	keyfile, err := chain.ResolveKeyfilePath(os.Getenv("KEYSTORE"))
+	keydir, ok := os.LookupEnv("KEYSTORE")
+	if !ok {
+		fmt.Println("Please set the environment variable for private key or keystore")
+		os.Exit(1)
+	}
+
+	keyfile, err := chain.ResolveKeyfilePath(keydir)
 	if err != nil {
 		panic(err)
 	}
-	return chain.DecryptPrivateKey(keyfile, os.Getenv("PASSWORD"))
+	password, err := os.ReadFile(DefaultKeyAuth)
+	if err != nil {
+		panic(fmt.Errorf("failed to read password from %v", DefaultKeyAuth))
+	}
+
+	return chain.DecryptPrivateKey(keyfile, strings.TrimRight(string(password), "\r\n"))
 }
