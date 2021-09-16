@@ -103,7 +103,9 @@ func (s *Server) handleClaim() http.HandlerFunc {
 			return
 		}
 
-		txHash, err := s.Transfer(r.Context(), address, s.cfg.payout)
+		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+		defer cancel()
+		txHash, err := s.Transfer(ctx, address, s.cfg.payout)
 		s.sem.Release(1)
 		if err != nil {
 			log.WithError(err).Error("Failed to send transaction")

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -50,10 +49,7 @@ func (l *Limiter) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Ha
 	l.cache.SetWithTTL(clintIP, true, l.ttl)
 	l.mutex.Unlock()
 
-	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
-	defer cancel()
-
-	next.ServeHTTP(w, r.WithContext(ctx))
+	next.ServeHTTP(w, r)
 	if w.(negroni.ResponseWriter).Status() != http.StatusOK {
 		l.cache.Remove(address)
 		l.cache.Remove(clintIP)
