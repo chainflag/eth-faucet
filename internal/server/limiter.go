@@ -38,8 +38,12 @@ func (l *Limiter) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Ha
 		http.Error(w, "invalid address", http.StatusBadRequest)
 		return
 	}
-	clintIP := getClientIPFromRequest(l.proxyCount, r)
+	if l.ttl <= 0 {
+		next.ServeHTTP(w, r)
+		return
+	}
 
+	clintIP := getClientIPFromRequest(l.proxyCount, r)
 	l.mutex.Lock()
 	if l.limitByKey(w, address) || l.limitByKey(w, clintIP) {
 		l.mutex.Unlock()
