@@ -15,7 +15,10 @@ import (
 	"github.com/chainflag/eth-faucet/internal/server"
 )
 
-const DefaultKeyAuth = "password.txt"
+const (
+	AppVersion     = "v1.0.0"
+	DefaultKeyAuth = "password.txt"
+)
 
 var chainIDMap = map[string]int{"mainnet": 1, "ropsten": 3, "rinkeby": 4, "goerli": 5, "kovan": 42}
 
@@ -26,10 +29,15 @@ var (
 	payoutFlag    = flag.Int("payout", 1, "Number of Ethers to transfer per user request")
 	proxyCntFlag  = flag.Int("proxycount", 0, "Count of reverse proxies in front of the server")
 	queueCapFlag  = flag.Int("queuecap", 100, "Maximum transactions waiting to be sent")
+	versionFlag   = flag.Bool("v", false, "Print version number")
 )
 
 func init() {
 	flag.Parse()
+	if *versionFlag {
+		fmt.Println(AppVersion)
+		os.Exit(0)
+	}
 }
 
 func Execute() {
