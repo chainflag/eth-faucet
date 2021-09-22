@@ -46,7 +46,7 @@ func Execute() {
 		panic(fmt.Errorf("failed to read private key: %w", err))
 	}
 	var chainID *big.Int
-	if value, ok := chainIDMap[*chainNameFlag]; ok {
+	if value, ok := chainIDMap[strings.ToLower(*chainNameFlag)]; ok {
 		chainID = big.NewInt(int64(value))
 	}
 
