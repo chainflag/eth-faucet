@@ -17,7 +17,7 @@ docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e KEYSTORE="keystore
 
 **Optional Flags**
 
-| flag        | Description                                      | Default Value
+| Flag        | Description                                      | Default Value
 | ----------- | ------------------------------------------------ | -------------
 | -chainname  | Network name to display on the frontend          | testnet
 | -httpport   | Listener port to serve HTTP connection           | 8080
