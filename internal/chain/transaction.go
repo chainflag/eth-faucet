@@ -24,16 +24,16 @@ type TxBuild struct {
 	fromAddress common.Address
 }
 
-func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.Int) TxBuilder {
+func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.Int) (TxBuilder, error) {
 	client, err := ethclient.Dial(provider)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	if chainID == nil {
 		chainID, err = client.ChainID(context.Background())
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
 
@@ -42,7 +42,7 @@ func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.In
 		privateKey:  privateKey,
 		signer:      types.NewEIP155Signer(chainID),
 		fromAddress: crypto.PubkeyToAddress(privateKey.PublicKey),
-	}
+	}, nil
 }
 
 func (b *TxBuild) Sender() common.Address {

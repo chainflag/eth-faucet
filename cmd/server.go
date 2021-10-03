@@ -50,7 +50,10 @@ func Execute() {
 		chainID = big.NewInt(int64(value))
 	}
 
-	txBuilder := chain.NewTxBuilder(os.Getenv("WEB3_PROVIDER"), privateKey, chainID)
+	txBuilder, err := chain.NewTxBuilder(os.Getenv("WEB3_PROVIDER"), privateKey, chainID)
+	if err != nil {
+		panic(fmt.Errorf("cannot connect to web3 provider: %w", err))
+	}
 	config := server.NewConfig(*chainNameFlag, *httpPortFlag, *intervalFlag, *payoutFlag, *proxyCntFlag, *queueCapFlag)
 	go server.NewServer(txBuilder, config).Run()
 
