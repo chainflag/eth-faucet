@@ -11,6 +11,8 @@
     payout: 1,
   };
 
+  $: document.title = `ETH ${faucetInfo.network} Faucet`;
+
   onMount(async () => {
     const res = await fetch('/api/info');
     faucetInfo = await res.json();
@@ -50,10 +52,6 @@
     return str.charAt(0).toUpperCase() + lower.slice(1);
   }
 </script>
-
-<svelte:head>
-  <title>ETH {faucetInfo.network} Faucet</title>
-</svelte:head>
 
 <main>
   <section class="hero is-info is-fullheight">
