@@ -3,7 +3,6 @@ package chain
 import (
 	"crypto/ecdsa"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,7 +11,7 @@ import (
 )
 
 func DecryptPrivateKey(keyfile, password string) (*ecdsa.PrivateKey, error) {
-	jsonBytes, err := ioutil.ReadFile(keyfile)
+	jsonBytes, err := os.ReadFile(keyfile)
 	if err != nil {
 		return nil, err
 	}
@@ -35,10 +34,7 @@ func ResolveKeyfilePath(keydir string) (string, error) {
 		return keydir, nil
 	}
 
-	files, err := ioutil.ReadDir(keydir)
-	if err != nil {
-		return "", err
-	}
+	files, _ := os.ReadDir(keydir)
 	for _, file := range files {
 		if file.IsDir() {
 			continue
