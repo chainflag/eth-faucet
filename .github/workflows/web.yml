@@ -16,4 +16,4 @@ jobs:
       with:
         node-version: '14'
     - run: npm run build
-    - run: cd web & npx prettier --check 'src/**/*.{css,html,js,svelte}'
+    - run: cd web && npx prettier --check 'src/**/*.{css,html,js,svelte}'
