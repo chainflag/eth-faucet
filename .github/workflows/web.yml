@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Web
 
 on:
   push:
@@ -15,4 +15,10 @@ jobs:
     - uses: actions/setup-node@v2
       with:
         node-version: '14'
-    - run: npm run build
+
+    - run: npm ci
+      working-directory: web
+    - run: npm run build --if-present
+      working-directory: web
+    - run: npx prettier --check 'src/**/*.{css,html,js,svelte}'
+      working-directory: web
