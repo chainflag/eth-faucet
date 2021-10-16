@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/LK4D4/trylock"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
-	"golang.org/x/sync/semaphore"
 
 	"github.com/chainflag/eth-faucet/internal/chain"
 	"github.com/chainflag/eth-faucet/web"
@@ -20,9 +20,9 @@ const AddressKey string = "address"
 
 type Server struct {
 	chain.TxBuilder
+	mutex trylock.Mutex
 	cfg   *Config
 	queue chan string
-	sem   *semaphore.Weighted
 }
 
 func NewServer(builder chain.TxBuilder, cfg *Config) *Server {
@@ -30,7 +30,6 @@ func NewServer(builder chain.TxBuilder, cfg *Config) *Server {
 		TxBuilder: builder,
 		cfg:       cfg,
 		queue:     make(chan string, cfg.queueCap),
-		sem:       semaphore.NewWeighted(1),
 	}
 }
 
@@ -63,8 +62,8 @@ func (s *Server) consumeQueue() {
 		return
 	}
 
-	s.sem.Acquire(context.Background(), 1)
-	defer s.sem.Release(1)
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	for len(s.queue) != 0 {
 		address := <-s.queue
 		txHash, err := s.Transfer(context.Background(), address, s.cfg.payout)
@@ -87,8 +86,8 @@ func (s *Server) handleClaim() http.HandlerFunc {
 		}
 
 		address := r.PostFormValue(AddressKey)
-		// The semaphore can be acquired only if the work queue is empty
-		if len(s.queue) != 0 || !s.sem.TryAcquire(1) {
+		// Try to lock mutex if the work queue is empty
+		if len(s.queue) != 0 || !s.mutex.TryLock() {
 			select {
 			case s.queue <- address:
 				log.WithFields(log.Fields{
@@ -103,10 +102,10 @@ func (s *Server) handleClaim() http.HandlerFunc {
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
 		txHash, err := s.Transfer(ctx, address, s.cfg.payout)
-		s.sem.Release(1)
+		s.mutex.Unlock()
 		if err != nil {
 			log.WithError(err).Error("Failed to send transaction")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
