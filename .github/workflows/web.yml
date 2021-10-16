@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Web
 
 on:
   push:
@@ -16,3 +16,4 @@ jobs:
       with:
         node-version: '14'
     - run: npm run build
+    - run: cd web & npx prettier --check 'src/**/*.{css,html,js,svelte}'
