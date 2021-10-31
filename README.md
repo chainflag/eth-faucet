@@ -3,16 +3,40 @@ The faucet is a web application with the goal of distributing small amounts of E
 
 ## Get started
 
-### Run with Docker
+### Prerequisites
 
-* Use private key as sender
+* Go (1.16 or later)
+* Node.js
+
+### Installation
+
+1. Clone the repository and navigate to the app’s directory
 ```bash
-docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e PRIVATE_KEY="hex private key" chainflag/eth-faucet:1.0.0 -httpport 8080
+git clone https://github.com/chainflag/eth-faucet.git
+cd eth-faucet
 ```
 
-* Use keystore file as sender
+2. Bundle Frontend web with Rollup
 ```bash
-docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e KEYSTORE="keystore path" -v `pwd`/keystore:/app/keystore -v `pwd`/password.txt:/app/password.txt chainflag/eth-faucet:1.0.0 -httpport 8080
+npm run build
+```
+
+3. Build Go project 
+```bash
+go build -o eth-faucet
+```
+
+## Usage
+
+1. Set up Web3 Provider and Private Key
+```bash
+export WEB3_PROVIDER="rpc endpoint"
+export PRIVATE_KEY="hex private key"
+```
+
+2. Run the eth faucet application
+```bash
+./eth-faucet -httpport 8080
 ```
 
 **Optional Flags**
@@ -26,7 +50,19 @@ docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e KEYSTORE="keystore
 | -proxycount | Count of reverse proxies in front of the server  | 0
 | -queuecap   | Maximum transactions waiting to be sent          | 100
 
-### Deploy to Heroku
+### Docker deployment
+
+* Use private key as sender
+```bash
+docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e PRIVATE_KEY="hex private key" chainflag/eth-faucet:1.0.0
+```
+
+* Use keystore file as sender
+```bash
+docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e KEYSTORE="keystore path" -v `pwd`/keystore:/app/keystore -v `pwd`/password.txt:/app/password.txt chainflag/eth-faucet:1.0.0
+```
+
+### Heroku deployment
 
 ```bash
 heroku create
@@ -42,35 +78,6 @@ or
 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
-## Development
-
-### Prerequisites
-
-* Go (1.16 or later)
-* Node.js
-
-### Build
-
-1. Clone the repository and navigate to the app’s directory
-```bash
-git clone https://github.com/chainflag/eth-faucet.git
-cd eth-faucet
-```
-
-2. Bundle Frontend web with Rollup
-```bash
-npm run build
-```
-_For more details, please refer to the [web readme](https://github.com/chainflag/eth-faucet/blob/main/web/README.md)_  
-
-3. Build binary application to run faucet
-```bash
-go build
-export WEB3_PROVIDER=https://ropsten.infura.io
-export PRIVATE_KEY=secret
-./eth-faucet
-```
-
 ## License
 
-This project is licensed under the MIT License
+Distributed under the MIT License. See LICENSE.txt for more information.
