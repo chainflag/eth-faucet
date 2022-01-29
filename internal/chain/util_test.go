@@ -1,6 +1,10 @@
 package chain
 
-import "testing"
+import (
+	"math/big"
+	"reflect"
+	"testing"
+)
 
 func TestIsValidAddress(t *testing.T) {
 	type args struct {
@@ -23,6 +27,23 @@ func TestIsValidAddress(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := IsValidAddress(tt.args.address, tt.args.checksummed); got != tt.want {
 				t.Errorf("IsValidAddress() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestEtherToWei(t *testing.T) {
+	tests := []struct {
+		name   string
+		amount int64
+		want   *big.Int
+	}{
+		{name: "1ether", amount: 1, want: new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := EtherToWei(tt.amount); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("EtherToWei() = %v, want %v", got, tt.want)
 			}
 		})
 	}

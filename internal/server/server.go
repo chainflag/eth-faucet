@@ -36,7 +36,7 @@ func NewServer(builder chain.TxBuilder, cfg *Config) *Server {
 func (s *Server) setupRouter() *http.ServeMux {
 	router := http.NewServeMux()
 	router.Handle("/", http.FileServer(web.Dist()))
-	limiter := NewLimiter(s.cfg.proxyCount, s.cfg.interval*time.Minute)
+	limiter := NewLimiter(s.cfg.proxyCount, time.Duration(s.cfg.interval)*time.Minute)
 	router.Handle("/api/claim", negroni.New(limiter, negroni.Wrap(s.handleClaim())))
 	router.Handle("/api/info", s.handleInfo())
 
@@ -66,7 +66,7 @@ func (s *Server) consumeQueue() {
 	defer s.mutex.Unlock()
 	for len(s.queue) != 0 {
 		address := <-s.queue
-		txHash, err := s.Transfer(context.Background(), address, s.cfg.payout)
+		txHash, err := s.Transfer(context.Background(), address, chain.EtherToWei(int64(s.cfg.payout)))
 		if err != nil {
 			log.WithError(err).Error("Failed to handle transaction in the queue")
 		} else {
@@ -104,7 +104,7 @@ func (s *Server) handleClaim() http.HandlerFunc {
 
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
-		txHash, err := s.Transfer(ctx, address, s.cfg.payout)
+		txHash, err := s.Transfer(ctx, address, chain.EtherToWei(int64(s.cfg.payout)))
 		s.mutex.Unlock()
 		if err != nil {
 			log.WithError(err).Error("Failed to send transaction")
@@ -136,7 +136,7 @@ func (s *Server) handleInfo() http.HandlerFunc {
 		json.NewEncoder(w).Encode(info{
 			Account:   s.Sender().String(),
 			ChainName: s.cfg.chainName,
-			Payout:    s.cfg.payout.String(),
+			Payout:    strconv.Itoa(s.cfg.payout),
 		})
 	}
 }

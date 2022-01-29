@@ -1,23 +1,20 @@
 <script>
   import { onMount } from 'svelte';
   import { getAddress } from '@ethersproject/address';
-  import { formatEther } from '@ethersproject/units';
   import { setDefaults as setToast, toast } from 'bulma-toast';
 
   let address = null;
   let faucetInfo = {
     account: '0x0000000000000000000000000000000000000000',
-    network: 'Testnet',
+    network: 'testnet',
     payout: 1,
   };
 
-  $: document.title = `ETH ${faucetInfo.network} Faucet`;
+  $: document.title = `ETH ${capitalize(faucetInfo.network)} Faucet`;
 
   onMount(async () => {
     const res = await fetch('/api/info');
     faucetInfo = await res.json();
-    faucetInfo.network = capitalize(faucetInfo.network);
-    faucetInfo.payout = parseInt(formatEther(faucetInfo.payout));
   });
 
   setToast({
