@@ -81,5 +81,5 @@ func getPrivateKeyFromEnv() (*ecdsa.PrivateKey, error) {
 		panic(fmt.Errorf("failed to read password from %v", DefaultKeyAuth))
 	}
 
-	return chain.DecryptPrivateKey(keyfile, strings.TrimRight(string(password), "\r\n"))
+	return chain.DecryptKeyfile(keyfile, strings.TrimRight(string(password), "\r\n"))
 }

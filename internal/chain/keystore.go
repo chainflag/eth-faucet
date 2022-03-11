@@ -10,7 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 )
 
-func DecryptPrivateKey(keyfile, password string) (*ecdsa.PrivateKey, error) {
+func DecryptKeyfile(keyfile, password string) (*ecdsa.PrivateKey, error) {
 	jsonBytes, err := os.ReadFile(keyfile)
 	if err != nil {
 		return nil, err

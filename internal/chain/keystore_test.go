@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-func TestDecryptPrivateKey(t *testing.T) {
+func TestDecryptKeyfile(t *testing.T) {
 	privateKey, _ := crypto.HexToECDSA("976f9f7772781ff6d1c93941129d417c49a209c674056a3cf5e27e225ee55fa8")
 	type args struct {
 		keyfile  string
@@ -42,7 +42,7 @@ func TestDecryptPrivateKey(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DecryptPrivateKey(tt.args.keyfile, tt.args.password)
+			got, err := DecryptKeyfile(tt.args.keyfile, tt.args.password)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DecryptPrivateKey() error = %v, wantErr %v", err, tt.wantErr)
 				return
