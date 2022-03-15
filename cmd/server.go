@@ -15,10 +15,6 @@ import (
 	"github.com/chainflag/eth-faucet/internal/server"
 )
 
-const (
-	DefaultKeyAuth = "password.txt"
-)
-
 var (
 	appVersion = "v1.0.0"
 	chainIDMap = map[string]int{"ropsten": 3, "rinkeby": 4, "goerli": 5, "kovan": 42}
@@ -31,6 +27,11 @@ var (
 	payoutFlag   = flag.Int("faucet.amount", 1, "Number of Ethers to transfer per user request")
 	intervalFlag = flag.Int("faucet.minutes", 1440, "Number of minutes to wait between funding rounds")
 	netnameFlag  = flag.String("faucet.name", "testnet", "Network name to display on the frontend")
+
+	keyJSONFlag  = flag.String("wallet.keyjson", os.Getenv("KEYSTORE"), "Keystore json file to fund user requests with")
+	keyPassFlag  = flag.String("wallet.keypass", "password.txt", "Decryption passphrase file to access keystore")
+	privKeyFlag  = flag.String("wallet.privkey", os.Getenv("PRIVATE_KEY"), "Private key hex to fund user requests with")
+	providerFlag = flag.String("wallet.provider", os.Getenv("WEB3_PROVIDER"), "Endpoint for Ethereum JSON-RPC connection")
 )
 
 func init() {
@@ -42,7 +43,7 @@ func init() {
 }
 
 func Execute() {
-	privateKey, err := getPrivateKeyFromEnv()
+	privateKey, err := getPrivateKeyFromFlag()
 	if err != nil {
 		panic(fmt.Errorf("failed to read private key: %w", err))
 	}
@@ -51,7 +52,7 @@ func Execute() {
 		chainID = big.NewInt(int64(value))
 	}
 
-	txBuilder, err := chain.NewTxBuilder(os.Getenv("WEB3_PROVIDER"), privateKey, chainID)
+	txBuilder, err := chain.NewTxBuilder(*providerFlag, privateKey, chainID)
 	if err != nil {
 		panic(fmt.Errorf("cannot connect to web3 provider: %w", err))
 	}
@@ -63,23 +64,21 @@ func Execute() {
 	<-c
 }
 
-func getPrivateKeyFromEnv() (*ecdsa.PrivateKey, error) {
-	if value, ok := os.LookupEnv("PRIVATE_KEY"); ok {
-		return crypto.HexToECDSA(value)
-	}
-	keydir, ok := os.LookupEnv("KEYSTORE")
-	if !ok {
-		fmt.Println("Please set the environment variable for private key or keystore")
-		os.Exit(1)
+func getPrivateKeyFromFlag() (*ecdsa.PrivateKey, error) {
+	if *privKeyFlag != "" {
+		return crypto.HexToECDSA(*privKeyFlag)
 	}
 
-	keyfile, err := chain.ResolveKeyfilePath(keydir)
-	if err != nil {
-		panic(err)
+	if *keyJSONFlag == "" {
+		panic("Please set the command flag for private key or keystore")
 	}
-	password, err := os.ReadFile(DefaultKeyAuth)
+	keyfile, err := chain.ResolveKeyfilePath(*keyJSONFlag)
 	if err != nil {
-		panic(fmt.Errorf("failed to read password from %v", DefaultKeyAuth))
+		return nil, err
+	}
+	password, err := os.ReadFile(*keyPassFlag)
+	if err != nil {
+		return nil, err
 	}
 
 	return chain.DecryptKeyfile(keyfile, strings.TrimRight(string(password), "\r\n"))
