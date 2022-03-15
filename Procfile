@@ -1,1 +1,1 @@
-web: bin/eth-faucet -httpport $PORT -interval 30 -proxycount 1
+web: bin/eth-faucet -httpport $PORT -proxycount 1 -faucet.minutes 30

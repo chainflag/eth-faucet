@@ -1,7 +1,7 @@
 package server
 
 type Config struct {
-	chainName  string
+	network    string
 	httpPort   int
 	interval   int
 	payout     int
@@ -9,9 +9,9 @@ type Config struct {
 	queueCap   int
 }
 
-func NewConfig(chainName string, httpPort, interval, payout, proxyCount, queueCap int) *Config {
+func NewConfig(network string, httpPort, interval, payout, proxyCount, queueCap int) *Config {
 	return &Config{
-		chainName:  chainName,
+		network:    network,
 		httpPort:   httpPort,
 		interval:   interval,
 		payout:     payout,

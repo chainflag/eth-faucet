@@ -16,26 +16,27 @@ import (
 )
 
 const (
-	AppVersion     = "v1.0.0"
 	DefaultKeyAuth = "password.txt"
 )
 
-var chainIDMap = map[string]int{"mainnet": 1, "ropsten": 3, "rinkeby": 4, "goerli": 5, "kovan": 42}
-
 var (
-	chainNameFlag = flag.String("chainname", "testnet", "Network name to display on the frontend")
-	httpPortFlag  = flag.Int("httpport", 8080, "Listener port to serve HTTP connection")
-	intervalFlag  = flag.Int("interval", 1440, "Number of minutes to wait between funding rounds")
-	payoutFlag    = flag.Int("payout", 1, "Number of Ethers to transfer per user request")
-	proxyCntFlag  = flag.Int("proxycount", 0, "Count of reverse proxies in front of the server")
-	queueCapFlag  = flag.Int("queuecap", 100, "Maximum transactions waiting to be sent")
-	versionFlag   = flag.Bool("v", false, "Print version number")
+	appVersion = "v1.0.0"
+	chainIDMap = map[string]int{"ropsten": 3, "rinkeby": 4, "goerli": 5, "kovan": 42}
+
+	httpPortFlag = flag.Int("httpport", 8080, "Listener port to serve HTTP connection")
+	proxyCntFlag = flag.Int("proxycount", 0, "Count of reverse proxies in front of the server")
+	queueCapFlag = flag.Int("queuecap", 100, "Maximum transactions waiting to be sent")
+	versionFlag  = flag.Bool("version", false, "Print version number")
+
+	payoutFlag   = flag.Int("faucet.amount", 1, "Number of Ethers to transfer per user request")
+	intervalFlag = flag.Int("faucet.minutes", 1440, "Number of minutes to wait between funding rounds")
+	netnameFlag  = flag.String("faucet.name", "testnet", "Network name to display on the frontend")
 )
 
 func init() {
 	flag.Parse()
 	if *versionFlag {
-		fmt.Println(AppVersion)
+		fmt.Println(appVersion)
 		os.Exit(0)
 	}
 }
@@ -46,7 +47,7 @@ func Execute() {
 		panic(fmt.Errorf("failed to read private key: %w", err))
 	}
 	var chainID *big.Int
-	if value, ok := chainIDMap[strings.ToLower(*chainNameFlag)]; ok {
+	if value, ok := chainIDMap[strings.ToLower(*netnameFlag)]; ok {
 		chainID = big.NewInt(int64(value))
 	}
 
@@ -54,7 +55,7 @@ func Execute() {
 	if err != nil {
 		panic(fmt.Errorf("cannot connect to web3 provider: %w", err))
 	}
-	config := server.NewConfig(*chainNameFlag, *httpPortFlag, *intervalFlag, *payoutFlag, *proxyCntFlag, *queueCapFlag)
+	config := server.NewConfig(*netnameFlag, *httpPortFlag, *intervalFlag, *payoutFlag, *proxyCntFlag, *queueCapFlag)
 	go server.NewServer(txBuilder, config).Run()
 
 	c := make(chan os.Signal, 1)
