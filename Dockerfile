@@ -20,7 +20,7 @@ RUN go mod download
 COPY . .
 COPY --from=frontend /frontend-build/public ./web/public
 
-RUN go build -o eth-faucet -ldflags "-w -s"
+RUN go build -o eth-faucet -ldflags "-s -w"
 
 FROM alpine
 
