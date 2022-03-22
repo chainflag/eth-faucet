@@ -71,8 +71,8 @@ The following are the available parameters to the faucet app:
 | ---------------- | ------------------------------------------------ | -------------
 | -wallet.provider | Endpoint for Ethereum JSON-RPC connection        | $WEB3_PROVIDER
 | -wallet.privkey  | Private key hex to fund user requests with       | $PRIVATE_KEY
-| -wallet.keyjson  | Keystore json file to fund user requests with    | $KEYSTORE
-| -wallet.keypass  | Decryption passphrase file to access keystore    | password.txt
+| -wallet.keyjson  | Keystore file to fund user requests with         | $KEYSTORE
+| -wallet.keypass  | Passphrase text file to decrypt keystore         | password.txt
 
 ### Docker deployment
 

@@ -29,8 +29,8 @@ var (
 	intervalFlag = flag.Int("faucet.minutes", 1440, "Number of minutes to wait between funding rounds")
 	netnameFlag  = flag.String("faucet.name", "testnet", "Network name to display on the frontend")
 
-	keyJSONFlag  = flag.String("wallet.keyjson", os.Getenv("KEYSTORE"), "Keystore json file to fund user requests with")
-	keyPassFlag  = flag.String("wallet.keypass", "password.txt", "Decryption passphrase file to access keystore")
+	keyJSONFlag  = flag.String("wallet.keyjson", os.Getenv("KEYSTORE"), "Keystore file to fund user requests with")
+	keyPassFlag  = flag.String("wallet.keypass", "password.txt", "Passphrase text file to decrypt keystore")
 	privKeyFlag  = flag.String("wallet.privkey", os.Getenv("PRIVATE_KEY"), "Private key hex to fund user requests with")
 	providerFlag = flag.String("wallet.provider", os.Getenv("WEB3_PROVIDER"), "Endpoint for Ethereum JSON-RPC connection")
 )
