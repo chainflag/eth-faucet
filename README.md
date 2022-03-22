@@ -35,38 +35,55 @@ go build -o eth-faucet
 
 ## Usage
 
-1. Set up Web3 Provider and Private Key
+* Use private key as funder
 ```bash
-export WEB3_PROVIDER="rpc endpoint"
-export PRIVATE_KEY="hex private key"
+./eth-faucet -httpport 8080 -wallet.provider http://localhost:8545 -wallet.privkey privkey
 ```
 
-2. Run the eth faucet application
+* Use keystore as funder
 ```bash
-./eth-faucet -httpport 8080
+./eth-faucet -httpport 8080 -wallet.provider http://localhost:8545 -wallet.keyjson `pwd`/keystore -wallet.keypass password.txt
 ```
 
-**Optional Flags**
+### Parameters
 
-| Flag           | Description                                      | Default Value
-| -------------- | ------------------------------------------------ | -------------
-| -httpport      | Listener port to serve HTTP connection           | 8080
-| -proxycount    | Count of reverse proxies in front of the server  | 0
-| -queuecap      | Maximum transactions waiting to be sent          | 100
-| -faucet.amount | Number of Ethers to transfer per user request    | 1
-| -faucet.minutes| Number of minutes to wait between funding rounds | 1440
-| -faucet.name   | Network name to display on the frontend          | testnet
+The following are the available parameters to the faucet app:
+
+**Basic Flags**
+
+| Flag             | Description                                      | Default Value
+| ---------------- | ------------------------------------------------ | -------------
+| -httpport        | Listener port to serve HTTP connection           | 8080
+| -proxycount      | Count of reverse proxies in front of the server  | 0
+| -queuecap        | Maximum transactions waiting to be sent          | 100
+
+**Faucet Flags**
+
+| Flag             | Description                                      | Default Value
+| ---------------- | ------------------------------------------------ | -------------
+| -faucet.amount   | Number of Ethers to transfer per user request    | 1
+| -faucet.minutes  | Number of minutes to wait between funding rounds | 1440
+| -faucet.name     | Network name to display on the frontend          | testnet
+
+**Wallet Flags**
+
+| Flag             | Description                                      | Default Value
+| ---------------- | ------------------------------------------------ | -------------
+| -wallet.provider | Endpoint for Ethereum JSON-RPC connection        | $WEB3_PROVIDER
+| -wallet.privkey  | Private key hex to fund user requests with       | $PRIVATE_KEY
+| -wallet.keyjson  | Keystore file to fund user requests with         | $KEYSTORE
+| -wallet.keypass  | Passphrase text file to decrypt keystore         | password.txt
 
 ### Docker deployment
 
-* Use private key as sender
+* Use private key as funder
 ```bash
-docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e PRIVATE_KEY="hex private key" chainflag/eth-faucet:1.0.0
+docker run -d -p 8080:8080 -e WEB3_PROVIDER=rpc endpoint -e PRIVATE_KEY=hex private key chainflag/eth-faucet:1.0.0
 ```
 
-* Use keystore file as sender
+* Use keystore as funder
 ```bash
-docker run -d -p 8080:8080 -e WEB3_PROVIDER="rpc endpoint" -e KEYSTORE="keystore path" -v `pwd`/keystore:/app/keystore -v `pwd`/password.txt:/app/password.txt chainflag/eth-faucet:1.0.0
+docker run -d -p 8080:8080 -e WEB3_PROVIDER=rpc endpoint -e KEYSTORE=keystore path -v `pwd`/keystore:/app/keystore -v `pwd`/password.txt:/app/password.txt chainflag/eth-faucet:1.0.0
 ```
 
 ### Heroku deployment
