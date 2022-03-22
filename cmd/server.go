@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"crypto/ecdsa"
+	"errors"
 	"flag"
 	"fmt"
 	"math/big"
@@ -43,7 +44,7 @@ func init() {
 }
 
 func Execute() {
-	privateKey, err := getPrivateKeyFromFlag()
+	privateKey, err := getPrivateKeyFromFlags()
 	if err != nil {
 		panic(fmt.Errorf("failed to read private key: %w", err))
 	}
@@ -64,14 +65,13 @@ func Execute() {
 	<-c
 }
 
-func getPrivateKeyFromFlag() (*ecdsa.PrivateKey, error) {
+func getPrivateKeyFromFlags() (*ecdsa.PrivateKey, error) {
 	if *privKeyFlag != "" {
 		return crypto.HexToECDSA(*privKeyFlag)
+	} else if *keyJSONFlag == "" {
+		return nil, errors.New("missing private key or keystore")
 	}
 
-	if *keyJSONFlag == "" {
-		panic("Please set the command flag for private key or keystore")
-	}
 	keyfile, err := chain.ResolveKeyfilePath(*keyJSONFlag)
 	if err != nil {
 		return nil, err
