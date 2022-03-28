@@ -35,53 +35,60 @@ go build -o eth-faucet
 
 ## Usage
 
-* Use private key as funder
+**Use private key to fund users**
+
 ```bash
 ./eth-faucet -httpport 8080 -wallet.provider http://localhost:8545 -wallet.privkey privkey
 ```
 
-* Use keystore as funder
+**Use keystore to fund users**
+
 ```bash
-./eth-faucet -httpport 8080 -wallet.provider http://localhost:8545 -wallet.keyjson `pwd`/keystore -wallet.keypass password.txt
+./eth-faucet -httpport 8080 -wallet.provider http://localhost:8545 -wallet.keyjson keystore -wallet.keypass password.txt
 ```
 
-### Parameters
+### Configuration
 
-The following are the available parameters to the faucet app:
+You can configure the funder by using environment variables instead of command-line flags as follows:
+```bash
+export WEB3_PROVIDER=rpc endpoint
+export PRIVATE_KEY=hex private key
+```
 
-**Basic Flags**
+or
 
-| Flag             | Description                                      | Default Value
-| ---------------- | ------------------------------------------------ | -------------
-| -httpport        | Listener port to serve HTTP connection           | 8080
-| -proxycount      | Count of reverse proxies in front of the server  | 0
-| -queuecap        | Maximum transactions waiting to be sent          | 100
+```bash
+export WEB3_PROVIDER=rpc endpoint
+export KEYSTORE=keystore path
+echo "your keystore password" > `pwd`/password.txt
+```
 
-**Faucet Flags**
+Then run the faucet application without the wallet command-line flags:
+```bash
+./eth-faucet -httpport 8080
+```
 
-| Flag             | Description                                      | Default Value
-| ---------------- | ------------------------------------------------ | -------------
-| -faucet.amount   | Number of Ethers to transfer per user request    | 1
-| -faucet.minutes  | Number of minutes to wait between funding rounds | 1440
-| -faucet.name     | Network name to display on the frontend          | testnet
+**Optional Flags**
 
-**Wallet Flags**
+The following are the available command-line flags(excluding above wallet flags):
 
-| Flag             | Description                                      | Default Value
-| ---------------- | ------------------------------------------------ | -------------
-| -wallet.provider | Endpoint for Ethereum JSON-RPC connection        | $WEB3_PROVIDER
-| -wallet.privkey  | Private key hex to fund user requests with       | $PRIVATE_KEY
-| -wallet.keyjson  | Keystore file to fund user requests with         | $KEYSTORE
-| -wallet.keypass  | Passphrase text file to decrypt keystore         | password.txt
+| Flag           | Description                                      | Default Value
+| -------------- | ------------------------------------------------ | -------------
+| -httpport      | Listener port to serve HTTP connection           | 8080
+| -proxycount    | Count of reverse proxies in front of the server  | 0
+| -queuecap      | Maximum transactions waiting to be sent          | 100
+| -faucet.amount | Number of Ethers to transfer per user request    | 1
+| -faucet.minutes| Number of minutes to wait between funding rounds | 1440
+| -faucet.name   | Network name to display on the frontend          | testnet
 
 ### Docker deployment
 
-* Use private key as funder
 ```bash
 docker run -d -p 8080:8080 -e WEB3_PROVIDER=rpc endpoint -e PRIVATE_KEY=hex private key chainflag/eth-faucet:1.0.0
 ```
 
-* Use keystore as funder
+or
+
 ```bash
 docker run -d -p 8080:8080 -e WEB3_PROVIDER=rpc endpoint -e KEYSTORE=keystore path -v `pwd`/keystore:/app/keystore -v `pwd`/password.txt:/app/password.txt chainflag/eth-faucet:1.0.0
 ```

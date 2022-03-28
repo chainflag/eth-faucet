@@ -7,7 +7,7 @@
       "value": "https://ropsten.infura.io"
     },
     "PRIVATE_KEY": {
-      "description": "Private key hex string of the faucet sender"
+      "description": "Private key hex string of the funding account"
     }
   },
   "buildpacks": [
