@@ -39,8 +39,7 @@
       method: 'POST',
       body: formData,
     });
-    let resp = await res.text();
-    let message = res.ok ? `Txhash: ${resp}` : resp;
+    let message = await res.text();
     let type = res.ok ? 'is-success' : 'is-warning';
     toast({ message, type });
   }
