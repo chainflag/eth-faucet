@@ -11,7 +11,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.0.0",
-    "prettier": "^2.5.1",
+    "prettier": "^2.6.0",
     "prettier-plugin-svelte": "^2.6.0",
     "rollup": "^2.3.4",
     "rollup-plugin-css-only": "^3.1.0",
@@ -21,7 +21,7 @@
     "svelte": "^3.0.0"
   },
   "dependencies": {
-    "@ethersproject/address": "^5.5.0",
+    "@ethersproject/address": "^5.6.0",
     "animate.css": "^4.1.1",
     "bulma": "^0.9.3",
     "bulma-toast": "^2.4.1",

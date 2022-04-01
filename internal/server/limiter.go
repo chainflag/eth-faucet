@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ReneKroon/ttlcache/v2"
+	"github.com/jellydator/ttlcache/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
 
