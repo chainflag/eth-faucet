@@ -6,11 +6,11 @@ import (
 	"net/http"
 )
 
-//go:embed public
+//go:embed dist
 var static embed.FS
 
 func Dist() http.FileSystem {
-	fsys, err := fs.Sub(static, "public")
+	fsys, err := fs.Sub(static, "dist")
 	if err != nil {
 		panic(err)
 	}

@@ -30,7 +30,7 @@ git clone https://github.com/chainflag/eth-faucet.git
 cd eth-faucet
 ```
 
-2. Bundle Frontend web with Rollup
+2. Bundle Frontend web with Vite
 ```bash
 npm run build
 ```
