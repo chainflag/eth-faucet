@@ -77,8 +77,6 @@ func (l *Limiter) limitByKey(w http.ResponseWriter, key string) bool {
 func getClientIPFromRequest(proxyCount int, r *http.Request) string {
 	if proxyCount > 0 {
 		xForwardedFor := r.Header.Get("X-Forwarded-For")
-		xRealIP := r.Header.Get("X-Real-Ip")
-
 		if xForwardedFor != "" {
 			xForwardedForParts := strings.Split(xForwardedFor, ",")
 			// Avoid reading the user's forged request header by configuring the count of reverse proxies
@@ -87,10 +85,6 @@ func getClientIPFromRequest(proxyCount int, r *http.Request) string {
 				partIndex = 0
 			}
 			return strings.TrimSpace(xForwardedForParts[partIndex])
-		}
-
-		if xRealIP != "" {
-			return strings.TrimSpace(xRealIP)
 		}
 	}
 
