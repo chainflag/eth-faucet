@@ -33,15 +33,19 @@
       return;
     }
 
-    let formData = new FormData();
-    formData.append('address', address);
     const res = await fetch('/api/claim', {
       method: 'POST',
-      body: formData,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        address,
+      }),
     });
-    let message = await res.text();
+
+    let { msg } = await res.json();
     let type = res.ok ? 'is-success' : 'is-warning';
-    toast({ message, type });
+    toast({ message: msg, type });
   }
 
   function capitalize(str) {
