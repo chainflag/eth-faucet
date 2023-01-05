@@ -1,6 +1,6 @@
 # eth-faucet
 
-[![Build](https://img.shields.io/github/workflow/status/chainflag/eth-faucet/Build)](https://github.com/chainflag/eth-faucet/actions/workflows/build.yml)
+[![Build](https://img.shields.io/github/actions/workflow/status/chainflag/eth-faucet/build.yml?branch=main)](https://github.com/chainflag/eth-faucet/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/chainflag/eth-faucet)](https://github.com/chainflag/eth-faucet/releases)
 [![Report](https://goreportcard.com/badge/github.com/chainflag/eth-faucet)](https://goreportcard.com/report/github.com/chainflag/eth-faucet)
 [![Go](https://img.shields.io/github/go-mod/go-version/chainflag/eth-faucet)](https://go.dev/)
