@@ -56,5 +56,5 @@ jobs:
       - run: yarn install
         working-directory: web
 
-      - run: npx prettier --check 'src/**/*.{css,html,js,svelte}'
+      - run: yarn prettier --check 'src/**/*.{css,html,js,svelte}'
         working-directory: web
