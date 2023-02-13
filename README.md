@@ -32,7 +32,7 @@ cd eth-faucet
 
 2. Bundle Frontend web with Vite
 ```bash
-npm run build
+go generate
 ```
 
 3. Build Go project 

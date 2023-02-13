@@ -10,16 +10,16 @@
     "prettier": "prettier --write 'src/**/*.{css,html,js,svelte}'"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^1.0.1",
-    "prettier": "^2.7.1",
-    "prettier-plugin-svelte": "^2.7.0",
-    "svelte": "^3.49.0",
-    "vite": "^3.0.7"
+    "@sveltejs/vite-plugin-svelte": "^2.0.2",
+    "prettier": "^2.8.4",
+    "prettier-plugin-svelte": "^2.9.0",
+    "svelte": "^3.55.1",
+    "vite": "^4.1.0"
   },
   "dependencies": {
     "@ethersproject/address": "^5.7.0",
     "animate.css": "^4.1.1",
     "bulma": "^0.9.4",
-    "bulma-toast": "^2.4.1"
+    "bulma-toast": "^2.4.2"
   }
 }
