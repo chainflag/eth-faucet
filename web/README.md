@@ -4,7 +4,7 @@ This is the Frontend of [eth-faucet](https://github.com/chainflag/eth-faucet) bu
 
 ## Get started
 
-*Note that you will need to have [Node.js](https://nodejs.org) and [Yarn](https://yarnpkg.com/) installed.*
+*Note that you will need to have [Node.js](https://nodejs.org) and [Yarn](https://yarnpkg.com) installed.*
 
 Install the dependencies...
 
