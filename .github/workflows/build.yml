@@ -53,7 +53,7 @@ jobs:
         with:
           node-version: "14"
 
-      - run: npm ci
+      - run: yarn install
         working-directory: web
 
       - run: npx prettier --check 'src/**/*.{css,html,js,svelte}'

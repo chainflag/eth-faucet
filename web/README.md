@@ -10,7 +10,7 @@ Install the dependencies...
 
 ```bash
 cd web
-yarn
+yarn install
 ```
 
 ...then start [vite](https://vitejs.dev/):
