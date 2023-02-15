@@ -67,7 +67,11 @@ func Execute() {
 
 func getPrivateKeyFromFlags() (*ecdsa.PrivateKey, error) {
 	if *privKeyFlag != "" {
-		return crypto.HexToECDSA(*privKeyFlag)
+		hexkey := *privKeyFlag
+		if chain.Has0xPrefix(hexkey) {
+			hexkey = hexkey[2:]
+		}
+		return crypto.HexToECDSA(hexkey)
 	} else if *keyJSONFlag == "" {
 		return nil, errors.New("missing private key or keystore")
 	}
