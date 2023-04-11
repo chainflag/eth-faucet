@@ -79,14 +79,14 @@ Then run the faucet application without the wallet command-line flags:
 
 The following are the available command-line flags(excluding above wallet flags):
 
-| Flag           | Description                                      | Default Value
-| -------------- | ------------------------------------------------ | -------------
-| -httpport      | Listener port to serve HTTP connection           | 8080
-| -proxycount    | Count of reverse proxies in front of the server  | 0
-| -queuecap      | Maximum transactions waiting to be sent          | 100
-| -faucet.amount | Number of Ethers to transfer per user request    | 1
-| -faucet.minutes| Number of minutes to wait between funding rounds | 1440
-| -faucet.name   | Network name to display on the frontend          | testnet
+| Flag            | Description                                      | Default Value  |
+|-----------------|--------------------------------------------------|----------------|
+| -httpport       | Listener port to serve HTTP connection           | 8080           |
+| -proxycount     | Count of reverse proxies in front of the server  | 0              |
+| -queuecap       | Maximum transactions waiting to be sent          | 100            |
+| -faucet.amount  | Number of Ethers to transfer per user request    | 1              |
+| -faucet.minutes | Number of minutes to wait between funding rounds | 1440           |
+| -faucet.name    | Network name to display on the frontend          | testnet        |
 
 ### Docker deployment
 
@@ -99,24 +99,6 @@ or
 ```bash
 docker run -d -p 8080:8080 -e WEB3_PROVIDER=rpc endpoint -e KEYSTORE=keystore path -v `pwd`/keystore:/app/keystore -v `pwd`/password.txt:/app/password.txt chainflag/eth-faucet:1.1.0
 ```
-
-### Heroku deployment
-
-```bash
-heroku create
-heroku buildpacks:add heroku/nodejs
-heroku buildpacks:add heroku/go
-heroku config:set WEB3_PROVIDER=rpc endpoint
-heroku config:set PRIVATE_KEY=hex private key
-git push heroku main
-heroku open
-```
-
-or
-
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-
-> tip: Free web dyno goes to sleep and discards in-memory rate limiting records after 30 minutes of inactivity, so `faucet.minutes` configuration greater than 30 doesn't work properly in the free Heroku plan.
 
 ## License
 
