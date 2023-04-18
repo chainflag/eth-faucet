@@ -2,11 +2,11 @@ FROM node:lts-alpine as frontend
 
 WORKDIR /frontend-build
 
-COPY ./web/package*.json ./
-RUN npm install
+COPY web/package.json web/yarn.lock ./
+RUN yarn install
 
-COPY ./web .
-RUN npm run build
+COPY web ./
+RUN yarn build
 
 FROM golang:1.16-alpine as backend
 
@@ -18,7 +18,7 @@ COPY go.* ./
 RUN go mod download
 
 COPY . .
-COPY --from=frontend /frontend-build/dist ./web/dist
+COPY --from=frontend /frontend-build/dist web/dist
 
 RUN go build -o eth-faucet -ldflags "-s -w"
 
