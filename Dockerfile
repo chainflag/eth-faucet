@@ -8,7 +8,7 @@ RUN yarn install
 COPY web ./
 RUN yarn build
 
-FROM golang:1.16-alpine as backend
+FROM golang:1.17-alpine as backend
 
 RUN apk add --no-cache gcc musl-dev linux-headers
 
