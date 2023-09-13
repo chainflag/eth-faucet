@@ -128,6 +128,7 @@ func (s *Server) handleInfo() http.HandlerFunc {
 		renderJSON(w, infoResponse{
 			Account: s.Sender().String(),
 			Network: s.cfg.network,
+			Symbol:  s.cfg.symbol,
 			Payout:  strconv.Itoa(s.cfg.payout),
 		}, http.StatusOK)
 	}

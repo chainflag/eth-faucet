@@ -7,12 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "prettier": "prettier --write 'src/**/*.{css,html,js,svelte}'"
+    "prettier": "prettier --write --plugin prettier-plugin-svelte 'src/**/*.{css,html,js,svelte}'"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.4.5",
     "prettier": "^3.0.0",
-    "prettier-plugin-svelte": "^2.9.0",
+    "prettier-plugin-svelte": "^3.0.0",
     "svelte": "^4.1.2",
     "vite": "^4.4.9"
   },

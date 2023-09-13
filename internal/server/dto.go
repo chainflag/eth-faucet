@@ -24,6 +24,7 @@ type infoResponse struct {
 	Account string `json:"account"`
 	Network string `json:"network"`
 	Payout  string `json:"payout"`
+	Symbol  string `json:"symbol"`
 }
 
 type malformedRequest struct {
