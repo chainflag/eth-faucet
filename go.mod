@@ -7,6 +7,7 @@ require (
 	github.com/agiledragon/gomonkey/v2 v2.10.1
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/jellydator/ttlcache/v2 v2.11.1
+	github.com/kataras/hcaptcha v0.0.2
 	github.com/sirupsen/logrus v1.9.3
 	github.com/urfave/negroni v1.0.0
 )

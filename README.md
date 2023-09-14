@@ -79,15 +79,17 @@ Then run the faucet application without the wallet command-line flags:
 
 The following are the available command-line flags(excluding above wallet flags):
 
-| Flag            | Description                                      | Default Value |
-|-----------------|--------------------------------------------------|---------------|
-| -httpport       | Listener port to serve HTTP connection           | 8080          |
-| -proxycount     | Count of reverse proxies in front of the server  | 0             |
-| -queuecap       | Maximum transactions waiting to be sent          | 100           |
-| -faucet.amount  | Number of Ethers to transfer per user request    | 1             |
-| -faucet.minutes | Number of minutes to wait between funding rounds | 1440          |
-| -faucet.name    | Network name to display on the frontend          | testnet       |
-| -faucet.symbol  | Token symbol to display on the frontend          | ETH           |
+| Flag              | Description                                      | Default Value |
+|-------------------|--------------------------------------------------|---------------|
+| -httpport         | Listener port to serve HTTP connection           | 8080          |
+| -proxycount       | Count of reverse proxies in front of the server  | 0             |
+| -queuecap         | Maximum transactions waiting to be sent          | 100           |
+| -faucet.amount    | Number of Ethers to transfer per user request    | 1             |
+| -faucet.minutes   | Number of minutes to wait between funding rounds | 1440          |
+| -faucet.name      | Network name to display on the frontend          | testnet       |
+| -faucet.symbol    | Token symbol to display on the frontend          | ETH           |
+| -hcaptcha.sitekey | hCaptcha sitekey                                 |               |
+| -hcaptcha.secret  | hCaptcha secret                                  |               |
 
 ### Docker deployment
 

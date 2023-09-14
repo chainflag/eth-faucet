@@ -10,16 +10,32 @@
     network: 'testnet',
     payout: 1,
     symbol: 'ETH',
+    hcaptcha_sitekey: '',
+  };
+
+  let mounted = false;
+  let hcaptchaLoaded = false;
+
+  onMount(async () => {
+    const res = await fetch('/api/info');
+    faucetInfo = await res.json();
+    mounted = true;
+  });
+
+  window.hcaptchaOnLoad = () => {
+    hcaptchaLoaded = true;
   };
 
   $: document.title = `${faucetInfo.symbol} ${capitalize(
     faucetInfo.network,
   )} Faucet`;
 
-  onMount(async () => {
-    const res = await fetch('/api/info');
-    faucetInfo = await res.json();
-  });
+  let widgetID;
+  $: if (mounted && hcaptchaLoaded) {
+    widgetID = window.hcaptcha.render('hcaptcha', {
+      sitekey: faucetInfo.hcaptcha_sitekey,
+    });
+  }
 
   setToast({
     position: 'bottom-center',
@@ -31,6 +47,11 @@
 
   async function handleRequest() {
     let address = input;
+    if (address === null) {
+      toast({ message: 'input required', type: 'is-warning' });
+      return;
+    }
+
     if (address.endsWith('.eth')) {
       try {
         const provider = new CloudflareProvider();
@@ -52,19 +73,32 @@
       return;
     }
 
-    const res = await fetch('/api/claim', {
-      method: 'POST',
-      headers: {
+    try {
+      let headers = {
         'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        address,
-      }),
-    });
+      };
 
-    let { msg } = await res.json();
-    let type = res.ok ? 'is-success' : 'is-warning';
-    toast({ message: msg, type });
+      if (hcaptchaLoaded) {
+        const { response } = await window.hcaptcha.execute(widgetID, {
+          async: true,
+        });
+        headers['h-captcha-response'] = response;
+      }
+
+      const res = await fetch('/api/claim', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          address,
+        }),
+      });
+
+      let { msg } = await res.json();
+      let type = res.ok ? 'is-success' : 'is-warning';
+      toast({ message: msg, type });
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   function capitalize(str) {
@@ -72,6 +106,16 @@
     return str.charAt(0).toUpperCase() + lower.slice(1);
   }
 </script>
+
+<svelte:head>
+  {#if mounted && faucetInfo.hcaptcha_sitekey}
+    <script
+      src="https://hcaptcha.com/1/api.js?onload=hcaptchaOnLoad&render=explicit"
+      async
+      defer
+    ></script>
+  {/if}
+</svelte:head>
 
 <main>
   <section class="hero is-info is-fullheight">
@@ -115,6 +159,7 @@
           <h2 class="subtitle">
             Serving from {faucetInfo.account}
           </h2>
+          <div id="hcaptcha" data-size="invisible"></div>
           <div class="box">
             <div class="field is-grouped">
               <p class="control is-expanded">

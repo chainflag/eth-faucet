@@ -34,7 +34,8 @@ func (s *Server) setupRouter() *http.ServeMux {
 	router := http.NewServeMux()
 	router.Handle("/", http.FileServer(web.Dist()))
 	limiter := NewLimiter(s.cfg.proxyCount, time.Duration(s.cfg.interval)*time.Minute)
-	router.Handle("/api/claim", negroni.New(limiter, negroni.Wrap(s.handleClaim())))
+	hcaptcha := NewCaptcha(s.cfg.hcaptchaSiteKey, s.cfg.hcaptchaSecret)
+	router.Handle("/api/claim", negroni.New(limiter, hcaptcha, negroni.Wrap(s.handleClaim())))
 	router.Handle("/api/info", s.handleInfo())
 
 	return router
@@ -126,10 +127,11 @@ func (s *Server) handleInfo() http.HandlerFunc {
 			return
 		}
 		renderJSON(w, infoResponse{
-			Account: s.Sender().String(),
-			Network: s.cfg.network,
-			Symbol:  s.cfg.symbol,
-			Payout:  strconv.Itoa(s.cfg.payout),
+			Account:         s.Sender().String(),
+			Network:         s.cfg.network,
+			Symbol:          s.cfg.symbol,
+			Payout:          strconv.Itoa(s.cfg.payout),
+			HcaptchaSiteKey: s.cfg.hcaptchaSiteKey,
 		}, http.StatusOK)
 	}
 }
