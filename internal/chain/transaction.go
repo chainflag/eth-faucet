@@ -47,7 +47,7 @@ func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.In
 		signer:      types.NewEIP155Signer(chainID),
 		fromAddress: crypto.PubkeyToAddress(privateKey.PublicKey),
 	}
-	txBuilder.resetNonce(context.Background())
+	txBuilder.refreshNonce(context.Background())
 
 	return txBuilder, nil
 }
@@ -79,9 +79,8 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 
 	if err = b.client.SendTransaction(ctx, signedTx); err != nil {
 		log.Error("failed to send tx", "tx hash", signedTx.Hash().String(), "err", err)
-		// check if contain nonce, and reset nonce
 		if strings.Contains(err.Error(), "nonce") {
-			b.resetNonce(context.Background())
+			b.refreshNonce(context.Background())
 		}
 		return common.Hash{}, err
 	}
@@ -93,10 +92,10 @@ func (b *TxBuild) getAndIncrementNonce() uint64 {
 	return atomic.AddUint64(&b.nonce, 1) - 1
 }
 
-func (b *TxBuild) resetNonce(ctx context.Context) {
+func (b *TxBuild) refreshNonce(ctx context.Context) {
 	nonce, err := b.client.PendingNonceAt(ctx, b.Sender())
 	if err != nil {
-		log.Error("failed to reset nonce", "address", b.Sender(), "err", err)
+		log.Error("failed to refresh nonce", "address", b.Sender(), "err", err)
 		return
 	}
 
