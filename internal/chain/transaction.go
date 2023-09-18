@@ -106,7 +106,7 @@ func (b *TxBuild) getAndIncrementNonce() uint64 {
 func (b *TxBuild) resetNonce(ctx context.Context) {
 	nonce, err := b.client.PendingNonceAt(ctx, b.Sender())
 	if err != nil {
-		log.Warn("failed to reset nonce", "address", b.Sender(), "err", err)
+		log.Error("failed to reset nonce", "address", b.Sender(), "err", err)
 		return
 	}
 
