@@ -4,12 +4,15 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"math/big"
+	"strings"
+	"sync/atomic"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	log "github.com/sirupsen/logrus"
 )
 
 type TxBuilder interface {
@@ -22,6 +25,7 @@ type TxBuild struct {
 	privateKey  *ecdsa.PrivateKey
 	signer      types.Signer
 	fromAddress common.Address
+	nonce       uint64
 }
 
 func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.Int) (TxBuilder, error) {
@@ -37,11 +41,18 @@ func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.In
 		}
 	}
 
+	fromAddress := crypto.PubkeyToAddress(privateKey.PublicKey)
+	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		return nil, err
+	}
+
 	return &TxBuild{
 		client:      client,
 		privateKey:  privateKey,
 		signer:      types.NewEIP155Signer(chainID),
-		fromAddress: crypto.PubkeyToAddress(privateKey.PublicKey),
+		fromAddress: fromAddress,
+		nonce:       nonce,
 	}, nil
 }
 
@@ -50,17 +61,13 @@ func (b *TxBuild) Sender() common.Address {
 }
 
 func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (common.Hash, error) {
-	nonce, err := b.client.PendingNonceAt(ctx, b.Sender())
-	if err != nil {
-		return common.Hash{}, err
-	}
-
 	gasLimit := uint64(21000)
 	gasPrice, err := b.client.SuggestGasPrice(ctx)
 	if err != nil {
 		return common.Hash{}, err
 	}
 
+	nonce := atomic.AddUint64(&b.nonce, 1)
 	toAddress := common.HexToAddress(to)
 	unsignedTx := types.NewTx(&types.LegacyTx{
 		Nonce:    nonce,
@@ -75,5 +82,24 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 		return common.Hash{}, err
 	}
 
-	return signedTx.Hash(), b.client.SendTransaction(ctx, signedTx)
+	if err = b.client.SendTransaction(ctx, signedTx); err != nil {
+		log.Error("failed to send tx", "tx hash", signedTx.Hash().String(), "err", err)
+		// check if contain nonce, and reset nonce
+		if strings.Contains(err.Error(), "nonce") {
+			b.resetNonce(context.Background())
+		}
+		return common.Hash{}, err
+	}
+
+	return signedTx.Hash(), nil
+}
+
+func (b *TxBuild) resetNonce(ctx context.Context) {
+	nonce, err := b.client.PendingNonceAt(ctx, b.Sender())
+	if err != nil {
+		log.Warn("failed to reset nonce", "address", b.Sender(), "err", err)
+		return
+	}
+
+	b.nonce = nonce
 }
