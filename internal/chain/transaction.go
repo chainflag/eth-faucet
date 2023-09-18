@@ -5,7 +5,7 @@ import (
 	"crypto/ecdsa"
 	"math/big"
 	"strings"
-	"sync"
+	"sync/atomic"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -26,7 +26,6 @@ type TxBuild struct {
 	signer      types.Signer
 	fromAddress common.Address
 	nonce       uint64
-	nonceMutex  sync.Mutex
 }
 
 func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.Int) (TxBuilder, error) {
@@ -42,19 +41,15 @@ func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.In
 		}
 	}
 
-	fromAddress := crypto.PubkeyToAddress(privateKey.PublicKey)
-	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
-	if err != nil {
-		return nil, err
-	}
-
-	return &TxBuild{
+	txBuilder := &TxBuild{
 		client:      client,
 		privateKey:  privateKey,
 		signer:      types.NewEIP155Signer(chainID),
-		fromAddress: fromAddress,
-		nonce:       nonce,
-	}, nil
+		fromAddress: crypto.PubkeyToAddress(privateKey.PublicKey),
+	}
+	txBuilder.resetNonce(context.Background())
+
+	return txBuilder, nil
 }
 
 func (b *TxBuild) Sender() common.Address {
@@ -95,12 +90,7 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 }
 
 func (b *TxBuild) getAndIncrementNonce() uint64 {
-	b.nonceMutex.Lock()
-	defer b.nonceMutex.Unlock()
-
-	nonce := b.nonce
-	b.nonce++
-	return nonce
+	return atomic.AddUint64(&b.nonce, 1) - 1
 }
 
 func (b *TxBuild) resetNonce(ctx context.Context) {
