@@ -3,16 +3,15 @@ package chain
 import (
 	"context"
 	"crypto/ecdsa"
-	"math/big"
-	"strings"
-	"sync/atomic"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
+	"math/big"
+	"strings"
+	"sync"
 )
 
 type TxBuilder interface {
@@ -26,6 +25,7 @@ type TxBuild struct {
 	signer      types.Signer
 	fromAddress common.Address
 	nonce       uint64
+	nonceMutex  sync.Mutex
 }
 
 func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.Int) (TxBuilder, error) {
@@ -67,10 +67,14 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 		return common.Hash{}, err
 	}
 
-	nonce := atomic.AddUint64(&b.nonce, 1)
+	b.nonceMutex.Lock()
+	nonce := b.nonce
+	nonce++
+	b.nonceMutex.Unlock()
+
 	toAddress := common.HexToAddress(to)
 	unsignedTx := types.NewTx(&types.LegacyTx{
-		Nonce:    nonce,
+		Nonce:    b.getAndIncrementNonce(),
 		To:       &toAddress,
 		Value:    value,
 		Gas:      gasLimit,
@@ -92,6 +96,15 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 	}
 
 	return signedTx.Hash(), nil
+}
+
+func (b *TxBuild) getAndIncrementNonce() uint64 {
+	b.nonceMutex.Lock()
+	defer b.nonceMutex.Unlock()
+
+	nonce := b.nonce
+	b.nonce++
+	return nonce
 }
 
 func (b *TxBuild) resetNonce(ctx context.Context) {
