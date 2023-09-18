@@ -3,7 +3,6 @@ module github.com/chainflag/eth-faucet
 go 1.17
 
 require (
-	github.com/LK4D4/trylock v0.0.0-20191027065348-ff7e133a5c54
 	github.com/agiledragon/gomonkey/v2 v2.10.1
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/jellydator/ttlcache/v2 v2.11.1

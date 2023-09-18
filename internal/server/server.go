@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/LK4D4/trylock"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
 
@@ -17,8 +16,7 @@ import (
 
 type Server struct {
 	chain.TxBuilder
-	mutex trylock.Mutex
-	cfg   *Config
+	cfg *Config
 }
 
 func NewServer(builder chain.TxBuilder, cfg *Config) *Server {

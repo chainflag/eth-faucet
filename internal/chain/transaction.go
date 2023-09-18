@@ -68,11 +68,6 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 		return common.Hash{}, err
 	}
 
-	b.nonceMutex.Lock()
-	nonce := b.nonce
-	nonce++
-	b.nonceMutex.Unlock()
-
 	toAddress := common.HexToAddress(to)
 	unsignedTx := types.NewTx(&types.LegacyTx{
 		Nonce:    b.getAndIncrementNonce(),
