@@ -3,15 +3,16 @@ package chain
 import (
 	"context"
 	"crypto/ecdsa"
+	"math/big"
+	"strings"
+	"sync"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
-	"math/big"
-	"strings"
-	"sync"
 )
 
 type TxBuilder interface {
