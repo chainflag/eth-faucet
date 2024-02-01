@@ -1,5 +1,5 @@
 {
   "scripts": {
-    "build": "npm install -g yarn && cd web && yarn install && yarn vite build"
+    "build": "cd web && yarn install && yarn vite build"
   }
 }

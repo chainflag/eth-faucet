@@ -18,16 +18,36 @@ import (
 
 var (
 	appVersion = "v1.1.0"
-	chainIDMap = map[string]int{"goerli": 5, "sepolia": 11155111}
+	chainIDMap = map[string]int{"goerli": 5, "auroria": 205205, "sepolia": 11155111}
 
-	httpPortFlag = flag.Int("httpport", 8080, "Listener port to serve HTTP connection")
+	port :=  os.Getenv("HTTP_PLATFORM_PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	faucetAmount :=  os.Getenv("FAUCET_AMOUNT")
+	if faucetAmount == "" {
+		faucetAmount = 1
+	}
+
+	faucetSymbol :=  os.Getenv("FAUCET_SYMBOL")
+	if faucetSymbol == "" {
+		faucetSymbol = "tSTRAX"
+	}
+
+	faucetName :=  os.Getenv("FAUCET_NAME")
+	if faucetName == "" {
+		faucetName = "auroria"
+	}
+
+	httpPortFlag = flag.Int("httpport", port, "Listener port to serve HTTP connection")
 	proxyCntFlag = flag.Int("proxycount", 0, "Count of reverse proxies in front of the server")
 	versionFlag  = flag.Bool("version", false, "Print version number")
 
-	payoutFlag   = flag.Int("faucet.amount", 1, "Number of Ethers to transfer per user request")
+	payoutFlag   = flag.Int("faucet.amount", faucetAmount, "Number of Ethers to transfer per user request")
 	intervalFlag = flag.Int("faucet.minutes", 1440, "Number of minutes to wait between funding rounds")
-	netnameFlag  = flag.String("faucet.name", "testnet", "Network name to display on the frontend")
-	symbolFlag   = flag.String("faucet.symbol", "ETH", "Token symbol to display on the frontend")
+	netnameFlag  = flag.String("faucet.name", faucetName, "Network name to display on the frontend")
+	symbolFlag   = flag.String("faucet.symbol", faucetSymbol, "Token symbol to display on the frontend")
 
 	keyJSONFlag  = flag.String("wallet.keyjson", os.Getenv("KEYSTORE"), "Keystore file to fund user requests with")
 	keyPassFlag  = flag.String("wallet.keypass", "password.txt", "Passphrase text file to decrypt keystore")
