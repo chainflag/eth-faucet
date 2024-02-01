@@ -119,15 +119,13 @@
 
 <main>
   <section class="hero is-info is-fullheight">
-    <div class="hero-head">
+    <div class="hero-head bg-purple-900">
       <nav class="navbar">
         <div class="container">
           <div class="navbar-brand">
             <a class="navbar-item" href="../..">
-              <span class="icon">
-                <i class="fa fa-bath" />
-              </span>
-              <span><b>{faucetInfo.symbol} Faucet</b></span>
+              <img src="public/stratis_logo_white.svg" class="mr-2" width="40" height="40 /" />
+              <span>Stratis Auroria Faucet</span>
             </a>
           </div>
           <div id="navbarMenu" class="navbar-menu">
@@ -135,7 +133,7 @@
               <span class="navbar-item">
                 <a
                   class="button is-white is-outlined"
-                  href="https://github.com/chainflag/eth-faucet"
+                  href="https://github.com/stratisproject/strax-faucet"
                 >
                   <span class="icon">
                     <i class="fa fa-github" />
@@ -152,11 +150,11 @@
     <div class="hero-body">
       <div class="container has-text-centered">
         <div class="column is-6 is-offset-3">
-          <h1 class="title">
+          <h1 class="text-purple-900 text-3xl mb-5">
             Receive {faucetInfo.payout}
             {faucetInfo.symbol} per request
           </h1>
-          <h2 class="subtitle">
+          <h2 class="text-xl text-purple-700 mb-5">
             Serving from {faucetInfo.account}
           </h2>
           <div id="hcaptcha" data-size="invisible"></div>
@@ -173,7 +171,7 @@
               <p class="control">
                 <button
                   on:click={handleRequest}
-                  class="button is-primary is-rounded"
+                  class="button bg-purple-900 text-white hover:text-white hover:bg-purple-600 is-rounded"
                 >
                   Request
                 </button>
@@ -188,9 +186,7 @@
 
 <style>
   .hero.is-info {
-    background:
-      linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-      url('/background.jpg') no-repeat center center fixed;
+    background: #fff;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
