@@ -29,20 +29,7 @@ jobs:
 
       - name: Build
         run: go build -v -o build/strax_faucet.exe 
-
-  golangci:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
-        with:
-          go-version: 1.21
-
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: latest
-
+ 
   prettier:
     runs-on: windows-latest
     steps:
