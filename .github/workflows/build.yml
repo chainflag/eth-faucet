@@ -28,7 +28,16 @@ jobs:
         run: go generate -x
 
       - name: Build
-        run: go build -v -o build/strax_faucet.exe 
+        run: go build -v -o build/strax_faucet.exe
+      
+      - name: Copy static template files
+        run: xcopy /E /I ./web/dist ./build/
+
+      - name: Publish Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-artifact
+          path: ./build
  
   prettier:
     runs-on: windows-latest
