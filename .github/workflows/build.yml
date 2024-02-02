@@ -30,8 +30,8 @@ jobs:
       - name: Build
         run: go build -v -o build/strax_faucet.exe
       
-      - name: Copy static template files
-        run: xcopy /E /I ./web/dist ./build/
+      - name: Copy web files
+        run: xcopy /E /I ".\web\dist" ".\build\dist"
 
       - name: Publish Artifact
         uses: actions/upload-artifact@v2
