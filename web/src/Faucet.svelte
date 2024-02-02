@@ -124,7 +124,7 @@
         <div class="container">
           <div class="navbar-brand">
             <a class="navbar-item" href="../..">
-              <img src="public/stratis_logo_white.svg" class="mr-2" width="40" height="40 /" />
+              <img src="stratis_logo_white.svg" class="mr-2" width="40" height="40 /" />
               <span>Stratis Auroria Faucet</span>
             </a>
           </div>
