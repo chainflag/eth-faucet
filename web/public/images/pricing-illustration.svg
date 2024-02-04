@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="334" height="334">
+  <defs>
+    <filter id="b" width="131.6%" height="131.6%" x="-15.8%" y="-15.8%" filterUnits="objectBoundingBox">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8"/>
+    </filter>
+    <filter id="c" width="121.4%" height="121.4%" x="-10.7%" y="-10.7%" filterUnits="objectBoundingBox">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8"/>
+    </filter>
+    <filter id="d" width="116.2%" height="116.2%" x="-8.1%" y="-8.1%" filterUnits="objectBoundingBox">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8"/>
+    </filter>
+    <linearGradient id="a" x1="48.703%" x2="48.703%" y1="5.528%" y2="95.154%">
+      <stop offset="0%" stop-color="#D8B4FE"/>
+      <stop offset="44.143%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#6366F1" stop-opacity=".8"/>
+    </linearGradient>
+  </defs>
+  <g fill="url(#a)" fill-rule="nonzero" transform="translate(-943 -1486)">
+    <path d="M167 103c-35.346 0-64 28.654-64 64 0 35.346 28.654 64 64 64 35.346 0 64-28.654 64-64 0-35.346-28.654-64-64-64Zm0-12c41.974 0 76 34.026 76 76s-34.026 76-76 76-76-34.026-76-76 34.026-76 76-76Z" filter="url(#b)" opacity=".32" transform="translate(943 1486)"/>
+    <path d="M167 67c-55.228 0-100 44.772-100 100s44.772 100 100 100 100-44.772 100-100S222.228 67 167 67Zm0-12c61.856 0 112 50.144 112 112s-50.144 112-112 112S55 228.856 55 167 105.144 55 167 55Z" filter="url(#c)" opacity=".159" transform="translate(943 1486)"/>
+    <path d="M167 31C91.89 31 31 91.89 31 167s60.89 136 136 136 136-60.89 136-136S242.11 31 167 31Zm0-12c81.738 0 148 66.262 148 148s-66.262 148-148 148S19 248.738 19 167 85.262 19 167 19Z" filter="url(#d)" opacity=".079" transform="translate(943 1486)"/>
+  </g>
+</svg>

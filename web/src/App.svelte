@@ -1,8 +1,6 @@
 <script>
   import 'animate.css';
-  import 'bulma/css/bulma.css';
   import Faucet from './Faucet.svelte';
-  import "./app.css";
 </script>
 
 <svelte:head>

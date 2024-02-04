@@ -6,11 +6,16 @@
     <link rel="apple-touch-icon" sizes="180x180" href="public/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="public/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="public/favicon-16x16.png">
+    <link href="/css/vendors/aos.css" rel="stylesheet">
+    <link href="/style.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + Svelte</title>
   </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
+  <body class="font-inter antialiased bg-slate-900 text-slate-100 tracking-tight">
+    <div class="flex flex-col min-h-screen overflow-hidden supports-[overflow:clip]:overflow-clip" id="app"></div>
+    <script src="/js/vendors/alpinejs.min.js" defer></script>
+    <script src="/js/vendors/aos.js"></script>
+    <script src="/js/main.js"></script>
+    <script defer type="module" src="/src/main.js"></script>
   </body>
 </html>

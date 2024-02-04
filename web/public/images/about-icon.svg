@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="72" height="72">
+  <defs>
+    <linearGradient id="b" x1="50%" x2="50%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#1E293B" stop-opacity=".48"/>
+    </linearGradient>
+    <linearGradient id="a" x1="50%" x2="50%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#A855F7"/>
+      <stop offset="49.365%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#334155" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="e" x1="94.04%" x2="9.97%" y1="27.296%" y2="86.882%">
+      <stop offset="0%" stop-color="#F1F5F9" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#F1F5F9"/>
+    </linearGradient>
+    <filter id="c" width="154.7%" height="154.7%" x="-27.3%" y="-27.3%" filterUnits="objectBoundingBox">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="2.5" result="shadowSpreadOuter1"/>
+      <feOffset in="shadowSpreadOuter1" result="shadowOffsetOuter1"/>
+      <feMorphology in="SourceAlpha" radius="2.5" result="shadowInner"/>
+      <feOffset in="shadowInner" result="shadowInner"/>
+      <feComposite in="shadowOffsetOuter1" in2="shadowInner" operator="out" result="shadowOffsetOuter1"/>
+      <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation="2"/>
+      <feColorMatrix in="shadowBlurOuter1" values="0 0 0 0 0.658823529 0 0 0 0 0.333333333 0 0 0 0 0.968627451 0 0 0 1 0"/>
+    </filter>
+    <circle id="d" cx="36" cy="36" r="15.545"/>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <rect width="70" height="70" x="1" y="1" fill="url(#b)" stroke="url(#a)" stroke-width="2" rx="35"/>
+    <g stroke-linecap="square">
+      <use xlink:href="#d" fill="#000" filter="url(#c)"/>
+      <use xlink:href="#d" stroke="url(#e)" stroke-width="5"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="81" height="81">
+  <defs>
+    <linearGradient id="a" x1="47.531%" x2="50%" y1="100%" y2="0%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#94A3B8"/>
+    </linearGradient>
+    <filter id="b" width="196.6%" height="196.6%" x="-48.3%" y="-44.4%" filterUnits="objectBoundingBox">
+      <feOffset dy="1" in="SourceAlpha" result="shadowOffsetOuter1"/>
+      <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation="4"/>
+      <feColorMatrix in="shadowBlurOuter1" values="0 0 0 0 0.88627451 0 0 0 0 0.909803922 0 0 0 0 0.941176471 0 0 0 0.24 0"/>
+    </filter>
+    <path id="c" d="M48.176 43.47h-2.352v-7.058h2.352a4.72 4.72 0 0 0 4.706-4.706A4.72 4.72 0 0 0 48.176 27a4.72 4.72 0 0 0-4.705 4.706v2.353h-7.06v-2.353A4.72 4.72 0 0 0 31.707 27 4.72 4.72 0 0 0 27 31.706a4.72 4.72 0 0 0 4.706 4.706h2.353v7.059h-2.353A4.72 4.72 0 0 0 27 48.176a4.72 4.72 0 0 0 4.706 4.706 4.72 4.72 0 0 0 4.706-4.706v-2.352h7.059v2.352a4.72 4.72 0 0 0 4.705 4.706 4.72 4.72 0 0 0 4.706-4.706 4.72 4.72 0 0 0-4.706-4.705Zm-2.352-11.764a2.36 2.36 0 0 1 2.352-2.353 2.36 2.36 0 0 1 2.353 2.353 2.36 2.36 0 0 1-2.353 2.353h-2.352v-2.353Zm-16.471 0a2.36 2.36 0 0 1 2.353-2.353 2.36 2.36 0 0 1 2.353 2.353v2.353h-2.353a2.36 2.36 0 0 1-2.353-2.353Zm4.706 16.47a2.36 2.36 0 0 1-2.353 2.353 2.36 2.36 0 0 1-2.353-2.353 2.36 2.36 0 0 1 2.353-2.352h2.353v2.352Zm2.353-11.764h7.059v7.059h-7.06v-7.06Zm11.764 14.117a2.36 2.36 0 0 1-2.352-2.353v-2.352h2.352a2.36 2.36 0 0 1 2.353 2.352 2.36 2.36 0 0 1-2.353 2.353Z"/>
+  </defs>
+  <g fill="none" fill-rule="evenodd" transform="translate(.154 .154)">
+    <rect width="79" height="79" x=".5" y=".5" fill="#1E293B" stroke="url(#a)" rx="16"/>
+    <use xlink:href="#c" fill="#000" filter="url(#b)"/>
+    <use xlink:href="#c" fill="#E2E8F0"/>
+  </g>
+</svg>
