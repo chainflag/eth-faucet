@@ -124,8 +124,8 @@
         <div class="container">
           <div class="navbar-brand">
             <a class="navbar-item" href="../..">
-              <span class="icon">
-                <i class="fa fa-bath" />
+              <span class="icon icon-brand">
+                <img src="/gpt-logo-white-transparent.svg" alt="logo"/>
               </span>
               <span><b>{faucetInfo.symbol} Faucet</b></span>
             </a>
@@ -187,6 +187,12 @@
 </main>
 
 <style>
+
+	.icon-brand {
+		width: 5rem; 
+		margin: 1rem;
+	}
+
   .hero.is-info {
     background:
       linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
