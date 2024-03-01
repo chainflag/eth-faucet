@@ -16,6 +16,9 @@
   let mounted = false;
   let hcaptchaLoaded = false;
 
+	const logoPath = import.meta.env.VITE_LOGO_PATH
+	const backgroundPath = import.meta.env.VITE_BACKGROUND_PATH
+
   onMount(async () => {
     const res = await fetch('/api/info');
     faucetInfo = await res.json();
@@ -118,14 +121,14 @@
 </svelte:head>
 
 <main>
-  <section class="hero is-info is-fullheight">
+  <section class="hero is-info is-fullheight" style='background-image: url({backgroundPath})'>
     <div class="hero-head">
       <nav class="navbar">
         <div class="container">
           <div class="navbar-brand">
             <a class="navbar-item" href="../..">
               <span class="icon icon-brand">
-                <img src="/gpt-logo-white-transparent.svg" alt="logo"/>
+                <img src={logoPath} alt="logo"/>
               </span>
               <span><b>{faucetInfo.symbol} Faucet</b></span>
             </a>
@@ -195,8 +198,8 @@
 
   .hero.is-info {
     background:
-      linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-      url('/background.jpg') no-repeat center center fixed;
+      linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+      no-repeat center center fixed;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
