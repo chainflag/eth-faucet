@@ -2,7 +2,7 @@ name: Docker
 
 on:
   push:
-    branches: [custom_image]
+    branches: [generic_build]
     tags: [v*]
 
 jobs:
