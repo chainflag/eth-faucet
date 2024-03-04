@@ -2,10 +2,8 @@ name: Docker
 
 on:
   push:
-    branches: [main]
+    branches: [custom_image]
     tags: [v*]
-  pull_request:
-    branches: [main]
 
 jobs:
   docker:
