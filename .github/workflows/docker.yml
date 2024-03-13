@@ -4,6 +4,8 @@ on:
   push:
     branches: [generic_build]
     tags: [v*]
+  pull_request:
+    branches: [generic_build]
 
 jobs:
   docker:
