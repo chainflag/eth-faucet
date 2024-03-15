@@ -5,13 +5,15 @@ type Config struct {
 	symbol          string
 	httpPort        int
 	interval        int
-	payout          float64
+	payout          int64
 	proxyCount      int
 	hcaptchaSiteKey string
 	hcaptchaSecret  string
+	logoUrl         string
+	backgroundUrl   string
 }
 
-func NewConfig(network, symbol string, httpPort, interval, proxyCount int, payout float64, hcaptchaSiteKey, hcaptchaSecret string) *Config {
+func NewConfig(network, symbol string, httpPort, interval, proxyCount int, payout int64, hcaptchaSiteKey, hcaptchaSecret, logoUrl, backgroundUrl string) *Config {
 	return &Config{
 		network:         network,
 		symbol:          symbol,
@@ -21,5 +23,7 @@ func NewConfig(network, symbol string, httpPort, interval, proxyCount int, payou
 		proxyCount:      proxyCount,
 		hcaptchaSiteKey: hcaptchaSiteKey,
 		hcaptchaSecret:  hcaptchaSecret,
+		logoUrl:         logoUrl,
+		backgroundUrl:   backgroundUrl,
 	}
 }

@@ -4,22 +4,48 @@
   import { CloudflareProvider } from '@ethersproject/providers';
   import { setDefaults as setToast, toast } from 'bulma-toast';
 
-	const symbol = import.meta.env.VITE_SYMBOL
-
   let input = null;
   let faucetInfo = {
     account: '0x0000000000000000000000000000000000000000',
     network: 'testnet',
-    payout: 1,
-    symbol: symbol,
+    payout: 1000000000,
+    symbol: 'ETH',
     hcaptcha_sitekey: '',
+    logo_url: '/gatewayfm-logo.svg',
+    background_url: 'background.jpg'
   };
 
   let mounted = false;
   let hcaptchaLoaded = false;
 
-	const logoPath = import.meta.env.VITE_LOGO_PATH
-	const backgroundPath = import.meta.env.VITE_BACKGROUND_PATH
+  function gweiToEth(gwei) {
+      let str = gwei.toString();
+      let len = str.length;
+
+      // Add leading zeros if necessary
+      if (len <= 9) {
+          str = '0'.repeat(9 - len) + str;
+          len = str.length;
+      }
+
+      // Insert decimal point
+      str = str.slice(0, len - 9) + '.' + str.slice(len - 9);
+
+      // Add leading zero if necessary
+      if (str.startsWith('.')) {
+          str = '0' + str;
+      }
+
+      // Remove trailing zeros
+      str = str.replace(/0+$/, '');
+
+      // Remove trailing decimal point
+      if (str.endsWith('.')) {
+          str = str.slice(0, -1);
+      }
+
+      return str;
+  }
 
   onMount(async () => {
     const res = await fetch('/api/info');
@@ -123,14 +149,14 @@
 </svelte:head>
 
 <main>
-  <section class="hero is-info is-fullheight" style='background-image: url({backgroundPath})'>
+  <section class="hero is-info is-fullheight" style='background-image: url({faucetInfo.background_url})'>
     <div class="hero-head">
       <nav class="navbar">
         <div class="container">
           <div class="navbar-brand">
             <a class="navbar-item" href="../..">
               <span class="icon icon-brand">
-                <img src={logoPath} alt="logo"/>
+                <img src={faucetInfo.logo_url} alt="logo"/>
               </span>
               <span><b>{faucetInfo.symbol} Faucet</b></span>
             </a>
@@ -158,7 +184,7 @@
       <div class="container has-text-centered">
         <div class="column is-6 is-offset-3">
           <h1 class="title">
-            Receive {faucetInfo.payout}
+            Receive {gweiToEth(faucetInfo.payout)}
             {faucetInfo.symbol} per request
           </h1>
           <h2 class="subtitle">
@@ -194,7 +220,7 @@
 <style>
 
 	.icon-brand {
-		width: 5rem; 
+		width: 5rem;
 		margin: 1rem;
 	}
 
