@@ -4,12 +4,14 @@
   import { CloudflareProvider } from '@ethersproject/providers';
   import { setDefaults as setToast, toast } from 'bulma-toast';
 
+	const symbol = import.meta.env.VITE_SYMBOL
+
   let input = null;
   let faucetInfo = {
     account: '0x0000000000000000000000000000000000000000',
     network: 'testnet',
     payout: 1,
-    symbol: 'ETH',
+    symbol: symbol,
     hcaptcha_sitekey: '',
   };
 
