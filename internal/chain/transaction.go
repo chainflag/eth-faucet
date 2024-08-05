@@ -21,11 +21,12 @@ type TxBuilder interface {
 }
 
 type TxBuild struct {
-	client      bind.ContractTransactor
-	privateKey  *ecdsa.PrivateKey
-	signer      types.Signer
-	fromAddress common.Address
-	nonce       uint64
+	client          bind.ContractTransactor
+	privateKey      *ecdsa.PrivateKey
+	signer          types.Signer
+	fromAddress     common.Address
+	nonce           uint64
+	supportsEIP1559 bool
 }
 
 func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.Int) (TxBuilder, error) {
@@ -41,11 +42,17 @@ func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.In
 		}
 	}
 
+	supportsEIP1559, err := checkEIP1559Support(client)
+	if err != nil {
+		return nil, err
+	}
+
 	txBuilder := &TxBuild{
-		client:      client,
-		privateKey:  privateKey,
-		signer:      types.NewEIP155Signer(chainID),
-		fromAddress: crypto.PubkeyToAddress(privateKey.PublicKey),
+		client:          client,
+		privateKey:      privateKey,
+		signer:          types.NewLondonSigner(chainID),
+		fromAddress:     crypto.PubkeyToAddress(privateKey.PublicKey),
+		supportsEIP1559: supportsEIP1559,
 	}
 	txBuilder.refreshNonce(context.Background())
 
@@ -58,19 +65,21 @@ func (b *TxBuild) Sender() common.Address {
 
 func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (common.Hash, error) {
 	gasLimit := uint64(21000)
-	gasPrice, err := b.client.SuggestGasPrice(ctx)
+	toAddress := common.HexToAddress(to)
+	nonce := b.getAndIncrementNonce()
+
+	var err error
+	var unsignedTx *types.Transaction
+
+	if b.supportsEIP1559 {
+		unsignedTx, err = b.buildEIP1559Tx(ctx, &toAddress, value, gasLimit, nonce)
+	} else {
+		unsignedTx, err = b.buildLegacyTx(ctx, &toAddress, value, gasLimit, nonce)
+	}
+
 	if err != nil {
 		return common.Hash{}, err
 	}
-
-	toAddress := common.HexToAddress(to)
-	unsignedTx := types.NewTx(&types.LegacyTx{
-		Nonce:    b.getAndIncrementNonce(),
-		To:       &toAddress,
-		Value:    value,
-		Gas:      gasLimit,
-		GasPrice: gasPrice,
-	})
 
 	signedTx, err := types.SignTx(unsignedTx, b.signer, b.privateKey)
 	if err != nil {
@@ -79,13 +88,54 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 
 	if err = b.client.SendTransaction(ctx, signedTx); err != nil {
 		log.Error("failed to send tx", "tx hash", signedTx.Hash().String(), "err", err)
-		if strings.Contains(err.Error(), "nonce") {
+		if strings.Contains(strings.ToLower(err.Error()), "nonce") {
 			b.refreshNonce(context.Background())
 		}
 		return common.Hash{}, err
 	}
 
 	return signedTx.Hash(), nil
+}
+
+func (b *TxBuild) buildEIP1559Tx(ctx context.Context, to *common.Address, value *big.Int, gasLimit uint64, nonce uint64) (*types.Transaction, error) {
+	header, err := b.client.HeaderByNumber(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	gasTipCap, err := b.client.SuggestGasTipCap(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// gasFeeCap = baseFee * 2 + gasTipCap
+	gasFeeCap := new(big.Int).Mul(header.BaseFee, big.NewInt(2))
+	gasFeeCap = new(big.Int).Add(gasFeeCap, gasTipCap)
+
+	return types.NewTx(&types.DynamicFeeTx{
+		ChainID:   b.signer.ChainID(),
+		Nonce:     nonce,
+		GasTipCap: gasTipCap,
+		GasFeeCap: gasFeeCap,
+		Gas:       gasLimit,
+		To:        to,
+		Value:     value,
+	}), nil
+}
+
+func (b *TxBuild) buildLegacyTx(ctx context.Context, to *common.Address, value *big.Int, gasLimit uint64, nonce uint64) (*types.Transaction, error) {
+	gasPrice, err := b.client.SuggestGasPrice(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return types.NewTx(&types.LegacyTx{
+		Nonce:    nonce,
+		GasPrice: gasPrice,
+		Gas:      gasLimit,
+		To:       to,
+		Value:    value,
+	}), nil
 }
 
 func (b *TxBuild) getAndIncrementNonce() uint64 {
@@ -99,5 +149,14 @@ func (b *TxBuild) refreshNonce(ctx context.Context) {
 		return
 	}
 
-	b.nonce = nonce
+	atomic.StoreUint64(&b.nonce, nonce)
+}
+
+func checkEIP1559Support(client *ethclient.Client) (bool, error) {
+	header, err := client.HeaderByNumber(context.Background(), nil)
+	if err != nil {
+		return false, err
+	}
+
+	return header.BaseFee != nil && header.BaseFee.Cmp(big.NewInt(0)) > 0, nil
 }

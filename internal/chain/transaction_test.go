@@ -30,10 +30,11 @@ func TestTxBuilder(t *testing.T) {
 	defer patches.Reset()
 
 	txBuilder := &TxBuild{
-		client:      simClient,
-		privateKey:  privateKey,
-		signer:      types.NewEIP155Signer(big.NewInt(1337)),
-		fromAddress: crypto.PubkeyToAddress(privateKey.PublicKey),
+		client:          simClient,
+		privateKey:      privateKey,
+		signer:          types.NewLondonSigner(big.NewInt(1337)),
+		fromAddress:     crypto.PubkeyToAddress(privateKey.PublicKey),
+		supportsEIP1559: false,
 	}
 	bgCtx := context.Background()
 	toAddress := common.HexToAddress("0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B")
