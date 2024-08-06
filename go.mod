@@ -3,14 +3,14 @@ module github.com/chainflag/eth-faucet
 go 1.17
 
 require (
-	github.com/agiledragon/gomonkey/v2 v2.10.1
+	github.com/agiledragon/gomonkey/v2 v2.12.0
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/jellydator/ttlcache/v2 v2.11.1
 	github.com/kataras/hcaptcha v0.0.2
 	github.com/shopspring/decimal v1.4.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.9.0
-	github.com/urfave/negroni v1.0.0
+	github.com/urfave/negroni/v3 v3.1.1
 )
 
 require (

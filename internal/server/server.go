@@ -8,7 +8,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/urfave/negroni"
+	"github.com/urfave/negroni/v3"
 
 	"github.com/chainflag/eth-faucet/internal/chain"
 	"github.com/chainflag/eth-faucet/web"

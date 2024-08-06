@@ -12,7 +12,7 @@ import (
 	"github.com/jellydator/ttlcache/v2"
 	"github.com/kataras/hcaptcha"
 	log "github.com/sirupsen/logrus"
-	"github.com/urfave/negroni"
+	"github.com/urfave/negroni/v3"
 )
 
 type Limiter struct {
