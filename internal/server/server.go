@@ -55,7 +55,7 @@ func (s *Server) handleClaim() http.HandlerFunc {
 		address, _ := readAddress(r)
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
-		txHash, err := s.Transfer(ctx, address, chain.EtherToWei(int64(s.cfg.payout)))
+		txHash, err := s.Transfer(ctx, address, chain.EtherToWei(s.cfg.payout))
 		if err != nil {
 			log.WithError(err).Error("Failed to send transaction")
 			renderJSON(w, claimResponse{Message: err.Error()}, http.StatusInternalServerError)
@@ -81,7 +81,7 @@ func (s *Server) handleInfo() http.HandlerFunc {
 			Account:         s.Sender().String(),
 			Network:         s.cfg.network,
 			Symbol:          s.cfg.symbol,
-			Payout:          strconv.Itoa(s.cfg.payout),
+			Payout:          strconv.FormatFloat(s.cfg.payout, 'f', -1, 64),
 			HcaptchaSiteKey: s.cfg.hcaptchaSiteKey,
 		}, http.StatusOK)
 	}

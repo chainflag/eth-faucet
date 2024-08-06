@@ -87,7 +87,6 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 	}
 
 	if err = b.client.SendTransaction(ctx, signedTx); err != nil {
-		log.Error("failed to send tx", "tx hash", signedTx.Hash().String(), "err", err)
 		if strings.Contains(strings.ToLower(err.Error()), "nonce") {
 			b.refreshNonce(context.Background())
 		}
@@ -145,7 +144,10 @@ func (b *TxBuild) getAndIncrementNonce() uint64 {
 func (b *TxBuild) refreshNonce(ctx context.Context) {
 	nonce, err := b.client.PendingNonceAt(ctx, b.Sender())
 	if err != nil {
-		log.Error("failed to refresh nonce", "address", b.Sender(), "err", err)
+		log.WithFields(log.Fields{
+			"address": b.Sender(),
+			"error":   err,
+		}).Error("failed to refresh account nonce")
 		return
 	}
 

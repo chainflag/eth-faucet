@@ -35,9 +35,11 @@ func TestIsValidAddress(t *testing.T) {
 func TestEtherToWei(t *testing.T) {
 	tests := []struct {
 		name   string
-		amount int64
+		amount float64
 		want   *big.Int
 	}{
+		{name: "0.01ether", amount: 0.01, want: new(big.Int).Exp(big.NewInt(10), big.NewInt(16), nil)},
+		{name: "0.1ether", amount: 0.1, want: new(big.Int).Exp(big.NewInt(10), big.NewInt(17), nil)},
 		{name: "1ether", amount: 1, want: new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)},
 	}
 	for _, tt := range tests {

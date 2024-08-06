@@ -4,11 +4,14 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/shopspring/decimal"
 )
 
-func EtherToWei(amount int64) *big.Int {
-	ether := new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
-	return new(big.Int).Mul(big.NewInt(amount), ether)
+func EtherToWei(amount float64) *big.Int {
+	oneEther := decimal.NewFromFloat(1e18)
+	result := decimal.NewFromFloat(amount).Mul(oneEther)
+	wei, _ := new(big.Int).SetString(result.String(), 10)
+	return wei
 }
 
 func Has0xPrefix(str string) bool {
