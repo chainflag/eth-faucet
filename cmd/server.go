@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	appVersion = "v1.1.0"
+	appVersion = "v1.2.0"
 	chainIDMap = map[string]int{"sepolia": 11155111, "holesky": 17000}
 
 	httpPortFlag = flag.Int("httpport", 8080, "Listener port to serve HTTP connection")

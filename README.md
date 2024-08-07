@@ -10,16 +10,16 @@ The faucet is a web application with the goal of distributing small amounts of E
 
 ## Features
 
-* Allow to configure the funding account via private key or keystore
-* Asynchronous processing Txs to achieve parallel execution of user requests
-* Rate limiting by ETH address and IP address as a precaution against spam
-* Prevent X-Forwarded-For spoofing by specifying the count of reverse proxies
+* Configure the funding account using a private key or keystore
+* Implement CAPTCHA verification to prevent abuse
+* Rate-limit requests by ETH address and IP address to prevent spam
+* Prevent X-Forwarded-For spoofing by specifying the number of reverse proxies
 
 ## Get started
 
 ### Prerequisites
 
-* Go (1.17 or later)
+* Go (version 1.17 or later)
 * Node.js
 
 ### Installation
@@ -30,7 +30,7 @@ git clone https://github.com/chainflag/eth-faucet.git
 cd eth-faucet
 ```
 
-2. Bundle Frontend web with Vite
+2. Bundle frontend with Vite
 ```bash
 go generate
 ```
@@ -42,13 +42,13 @@ go build -o eth-faucet
 
 ## Usage
 
-**Use private key to fund users**
+**Use a private key**
 
 ```bash
 ./eth-faucet -httpport 8080 -wallet.provider http://localhost:8545 -wallet.privkey privkey
 ```
 
-**Use keystore to fund users**
+**Use a keystore**
 
 ```bash
 ./eth-faucet -httpport 8080 -wallet.provider http://localhost:8545 -wallet.keyjson keystore -wallet.keypass password.txt
@@ -56,18 +56,18 @@ go build -o eth-faucet
 
 ### Configuration
 
-You can configure the funder by using environment variables instead of command-line flags as follows:
+You can configure the funding account by using environment variables instead of command-line flags:
 ```bash
-export WEB3_PROVIDER=rpc endpoint
-export PRIVATE_KEY=hex private key
+export WEB3_PROVIDER=rpc_endpoint
+export PRIVATE_KEY=hex_private_key
 ```
 
 or
 
 ```bash
-export WEB3_PROVIDER=rpc endpoint
-export KEYSTORE=keystore path
-echo "your keystore password" > `pwd`/password.txt
+export WEB3_PROVIDER=rpc_endpoint
+export KEYSTORE=keystore_path
+echo "your_keystore_password" > `pwd`/password.txt
 ```
 
 Then run the faucet application without the wallet command-line flags:
@@ -83,7 +83,7 @@ The following are the available command-line flags(excluding above wallet flags)
 |-------------------|--------------------------------------------------|---------------|
 | -httpport         | Listener port to serve HTTP connection           | 8080          |
 | -proxycount       | Count of reverse proxies in front of the server  | 0             |
-| -faucet.amount    | Number of Ethers to transfer per user request    | 1             |
+| -faucet.amount    | Number of Ethers to transfer per user request    | 1.0           |
 | -faucet.minutes   | Number of minutes to wait between funding rounds | 1440          |
 | -faucet.name      | Network name to display on the frontend          | testnet       |
 | -faucet.symbol    | Token symbol to display on the frontend          | ETH           |
@@ -93,13 +93,13 @@ The following are the available command-line flags(excluding above wallet flags)
 ### Docker deployment
 
 ```bash
-docker run -d -p 8080:8080 -e WEB3_PROVIDER=rpc endpoint -e PRIVATE_KEY=hex private key chainflag/eth-faucet:1.1.0
+docker run -d -p 8080:8080 -e WEB3_PROVIDER=rpc_endpoint -e PRIVATE_KEY=hex_private_key chainflag/eth-faucet:1.2.0
 ```
 
 or
 
 ```bash
-docker run -d -p 8080:8080 -e WEB3_PROVIDER=rpc endpoint -e KEYSTORE=keystore path -v `pwd`/keystore:/app/keystore -v `pwd`/password.txt:/app/password.txt chainflag/eth-faucet:1.1.0
+docker run -d -p 8080:8080 -e WEB3_PROVIDER=rpc_endpoint -e KEYSTORE=keystore_path -v `pwd`/keystore:/app/keystore -v `pwd`/password.txt:/app/password.txt chainflag/eth-faucet:1.2.0
 ```
 
 ## License
