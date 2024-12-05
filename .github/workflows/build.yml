@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [generic_build]
+    branches: [gatewayfm/generic-main]
   pull_request:
-    branches: [generic_build]
+    branches: [gatewayfm/generic-main]
 
 jobs:
   build:
