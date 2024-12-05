@@ -9,8 +9,8 @@ type Config struct {
 	proxyCount      int
 	hcaptchaSiteKey string
 	hcaptchaSecret  string
-	logoUrl         string
-	backgroundUrl   string
+	logoURL         string
+	backgroundURL   string
 }
 
 func NewConfig(network, symbol string, httpPort, interval, proxyCount int, payout int64, hcaptchaSiteKey, hcaptchaSecret, logoUrl, backgroundUrl string) *Config {
@@ -23,7 +23,7 @@ func NewConfig(network, symbol string, httpPort, interval, proxyCount int, payou
 		proxyCount:      proxyCount,
 		hcaptchaSiteKey: hcaptchaSiteKey,
 		hcaptchaSecret:  hcaptchaSecret,
-		logoUrl:         logoUrl,
-		backgroundUrl:   backgroundUrl,
+		logoURL:         logoUrl,
+		backgroundURL:   backgroundUrl,
 	}
 }
