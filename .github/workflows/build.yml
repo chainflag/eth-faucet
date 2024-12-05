@@ -43,6 +43,14 @@ jobs:
       - name: Generate
         run: go generate -x
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Generate
+        run: go generate -x
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v7
         with:
