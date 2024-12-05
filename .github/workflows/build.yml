@@ -44,6 +44,7 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
+          args: --skip-dirs dist
 
   prettier:
     runs-on: ubuntu-latest
