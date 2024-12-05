@@ -37,7 +37,7 @@ func setupTestServer(mockBuilder chain.TxBuilder) *Server {
 		interval:   0,
 		network:    "testnet",
 		symbol:     "ETH",
-		payout:     1.0,
+		payout:     1000000000, // 1 ETH
 	}
 	return NewServer(mockBuilder, cfg)
 }
