@@ -83,8 +83,8 @@ func (s *Server) handleInfo() http.HandlerFunc {
 			Symbol:          s.cfg.symbol,
 			Payout:          strconv.FormatInt(s.cfg.payout, 10),
 			HcaptchaSiteKey: s.cfg.hcaptchaSiteKey,
-			LogoUrl:         s.cfg.logoUrl,
-			BackgroundUrl:   s.cfg.backgroundUrl,
+			LogoURL:         s.cfg.logoURL,
+			BackgroundURL:   s.cfg.backgroundURL,
 		}, http.StatusOK)
 	}
 }
