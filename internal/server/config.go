@@ -13,7 +13,7 @@ type Config struct {
 	backgroundURL   string
 }
 
-func NewConfig(network, symbol string, httpPort, interval, proxyCount int, payout int64, hcaptchaSiteKey, hcaptchaSecret, logoUrl, backgroundUrl string) *Config {
+func NewConfig(network, symbol string, httpPort, interval, proxyCount int, payout int64, hcaptchaSiteKey, hcaptchaSecret, logoURL, backgroundURL string) *Config {
 	return &Config{
 		network:         network,
 		symbol:          symbol,
@@ -23,7 +23,7 @@ func NewConfig(network, symbol string, httpPort, interval, proxyCount int, payou
 		proxyCount:      proxyCount,
 		hcaptchaSiteKey: hcaptchaSiteKey,
 		hcaptchaSecret:  hcaptchaSecret,
-		logoURL:         logoUrl,
-		backgroundURL:   backgroundUrl,
+		logoURL:         logoURL,
+		backgroundURL:   backgroundURL,
 	}
 }
