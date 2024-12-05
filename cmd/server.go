@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"os/signal"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -79,6 +80,10 @@ func Execute() {
 	)
 
 	go server.NewServer(txBuilder, config).Run()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	<-c
 
 }
 func getPrivateKeyFromFlags() (*ecdsa.PrivateKey, error) {
