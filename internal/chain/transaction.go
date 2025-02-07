@@ -20,15 +20,16 @@ type TxBuilder interface {
 }
 
 type TxBuild struct {
-	client          bind.ContractTransactor
-	privateKey      *ecdsa.PrivateKey
-	signer          types.Signer
-	fromAddress     common.Address
-	nonce           uint64
-	supportsEIP1559 bool
-	refreshInterval time.Duration
-	lastRefreshTime time.Time
-	nonceMu         sync.Mutex
+	client               bind.ContractTransactor
+	privateKey           *ecdsa.PrivateKey
+	signer               types.Signer
+	fromAddress          common.Address
+	nonce                uint64
+	supportsEIP1559      bool
+	nonceRefreshEvery    uint64
+	nonceRefreshInterval time.Duration
+	lastRefreshTime      time.Time
+	nonceMu              sync.Mutex
 }
 
 func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.Int) (TxBuilder, error) {
@@ -50,14 +51,15 @@ func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.In
 	}
 
 	txBuilder := &TxBuild{
-		client:          client,
-		privateKey:      privateKey,
-		signer:          types.NewLondonSigner(chainID),
-		fromAddress:     crypto.PubkeyToAddress(privateKey.PublicKey),
-		supportsEIP1559: supportsEIP1559,
-		lastRefreshTime: time.Time{},
-		nonceMu:         sync.Mutex{},
-		refreshInterval: time.Minute * 1,
+		client:               client,
+		privateKey:           privateKey,
+		signer:               types.NewLondonSigner(chainID),
+		fromAddress:          crypto.PubkeyToAddress(privateKey.PublicKey),
+		supportsEIP1559:      supportsEIP1559,
+		lastRefreshTime:      time.Time{},
+		nonceMu:              sync.Mutex{},
+		nonceRefreshInterval: time.Minute * 1,
+		nonceRefreshEvery:    100,
 	}
 
 	return txBuilder, nil
@@ -145,15 +147,15 @@ func (b *TxBuild) buildLegacyTx(ctx context.Context, to *common.Address, value *
 func (b *TxBuild) getNextNonce(ctx context.Context) (uint64, error) {
 	b.nonceMu.Lock()
 	defer b.nonceMu.Unlock()
-	if time.Since(b.lastRefreshTime) > b.refreshInterval {
+	b.nonce++
+	// fetch from RPC every n txs, or after refresh interval - whichever is hit first
+	if time.Since(b.lastRefreshTime) > b.nonceRefreshInterval || b.nonce%b.nonceRefreshEvery == 0 {
 		n, err := b.client.PendingNonceAt(ctx, b.fromAddress)
 		if err != nil {
 			return 0, err
 		}
 		b.nonce = n
 		b.lastRefreshTime = time.Now()
-	} else {
-		b.nonce++
 	}
 	nonce := b.nonce
 	return nonce, nil
