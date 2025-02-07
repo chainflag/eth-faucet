@@ -66,10 +66,18 @@ func (b *TxBuild) Sender() common.Address {
 func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (common.Hash, error) {
 	gasLimit := uint64(21000)
 	toAddress := common.HexToAddress(to)
-	nonce := b.getAndIncrementNonce()
 
 	var err error
 	var unsignedTx *types.Transaction
+
+	nonce, err := b.client.PendingNonceAt(ctx, b.Sender())
+	if err != nil {
+		log.WithFields(log.Fields{
+			"address": b.Sender(),
+			"error":   err,
+		}).Error("failed to get nonce")
+		return common.Hash{}, err
+	}
 
 	if b.supportsEIP1559 {
 		unsignedTx, err = b.buildEIP1559Tx(ctx, &toAddress, value, gasLimit, nonce)
