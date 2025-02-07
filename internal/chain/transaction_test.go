@@ -12,6 +12,11 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/stretchr/testify/require"
+	"time"
+	"sync"
+	"sort"
 )
 
 func TestTxBuilder(t *testing.T) {
@@ -60,4 +65,80 @@ func TestTxBuilder(t *testing.T) {
 	if bal.Cmp(value) != 0 {
 		t.Errorf("expected balance for to address not received. expected: %v actual: %v", value, bal)
 	}
+}
+
+type mockEthClient struct {
+	bind.ContractTransactor
+	pendingNonce uint64
+	chainID      *big.Int
+}
+
+func (m *mockEthClient) PendingNonceAt(ctx context.Context, account common.Address) (uint64, error) {
+	return m.pendingNonce, nil
+}
+func (m *mockEthClient) ChainID(ctx context.Context) (*big.Int, error) {
+	return m.chainID, nil
+}
+func (m *mockEthClient) HeaderByNumber(ctx context.Context, number *big.Int) (*types.Header, error) {
+	return &types.Header{BaseFee: big.NewInt(1)}, nil
+}
+func (m *mockEthClient) SuggestGasTipCap(ctx context.Context) (*big.Int, error) {
+	return big.NewInt(1), nil
+}
+func (m *mockEthClient) SuggestGasPrice(ctx context.Context) (*big.Int, error) {
+	return big.NewInt(1), nil
+}
+func (m *mockEthClient) SendTransaction(ctx context.Context, tx *types.Transaction) error {
+	return nil
+}
+
+func TestTxBuilderNonceConcurrency(t *testing.T) {
+	privKey, err := crypto.GenerateKey()
+	require.NoError(t, err)
+
+	mock := &mockEthClient{
+		pendingNonce: 0,
+		chainID:      big.NewInt(1),
+	}
+
+	builder := &TxBuild{
+		client:          mock,
+		privateKey:      privKey,
+		signer:          types.NewLondonSigner(mock.chainID),
+		fromAddress:     crypto.PubkeyToAddress(privKey.PublicKey),
+		supportsEIP1559: true,
+		refreshInterval: time.Hour,
+		lastRefreshTime: time.Now(),
+	}
+
+	const total = 50
+	var wg sync.WaitGroup
+	wg.Add(total)
+
+	results := make(chan uint64, total)
+	for i := 0; i < total; i++ {
+		go func() {
+			defer wg.Done()
+			n, err := builder.getNextNonce(context.Background())
+			require.NoError(t, err)
+			results <- n
+		}()
+	}
+
+	wg.Wait()
+	close(results)
+
+	got := make([]uint64, 0, total)
+	for r := range results {
+		got = append(got, r)
+	}
+
+	sort.Slice(got, func(i, j int) bool { return got[i] < got[j] })
+
+	expected := make([]uint64, total)
+	for i := 0; i < total; i++ {
+		expected[i] = uint64(i + 1)
+	}
+
+	require.Equal(t, expected, got)
 }
