@@ -30,11 +30,13 @@ var (
 	symbolFlag     = flag.String("faucet.symbol", "ETH", "Token symbol to display on the frontend")
 	logoFlag       = flag.String("frontend.logo", "/gatewayfm-logo.svg", "Logo to display on the frontend")
 	backgroundFlag = flag.String("frontend.background", "/background.jpg", "Background to display on the frontend")
+	keyJSONFlag    = flag.String("wallet.keyjson", os.Getenv("KEYSTORE"), "Keystore file to fund user requests with")
+	keyPassFlag    = flag.String("wallet.keypass", "password.txt", "Passphrase text file to decrypt keystore")
+	privKeyFlag    = flag.String("wallet.privkey", os.Getenv("PRIVATE_KEY"), "Private key hex to fund user requests with")
+	providerFlag   = flag.String("wallet.provider", os.Getenv("WEB3_PROVIDER"), "Endpoint for Ethereum JSON-RPC connection")
 
-	keyJSONFlag  = flag.String("wallet.keyjson", os.Getenv("KEYSTORE"), "Keystore file to fund user requests with")
-	keyPassFlag  = flag.String("wallet.keypass", "password.txt", "Passphrase text file to decrypt keystore")
-	privKeyFlag  = flag.String("wallet.privkey", os.Getenv("PRIVATE_KEY"), "Private key hex to fund user requests with")
-	providerFlag = flag.String("wallet.provider", os.Getenv("WEB3_PROVIDER"), "Endpoint for Ethereum JSON-RPC connection")
+	frontendTypeFlag = flag.String("frontend.type", "base", "Type of frontend to generate. Values enum: 'base', 'redesign'.")
+	paidCustomerFlag = flag.Bool("faucet.paidcustomer", false, "Whether the faucet will belong to the paid customer")
 
 	hcaptchaSiteKeyFlag = flag.String("hcaptcha.sitekey", os.Getenv("HCAPTCHA_SITEKEY"), "hCaptcha sitekey")
 	hcaptchaSecretFlag  = flag.String("hcaptcha.secret", os.Getenv("HCAPTCHA_SECRET"), "hCaptcha secret")
@@ -62,7 +64,21 @@ func Execute() {
 	if err != nil {
 		panic(fmt.Errorf("cannot connect to web3 provider: %w", err))
 	}
-	config := server.NewConfig(*netnameFlag, *symbolFlag, *httpPortFlag, *intervalFlag, *proxyCntFlag, *payoutFlag, *hcaptchaSiteKeyFlag, *hcaptchaSecretFlag, *logoFlag, *backgroundFlag)
+	config := server.NewConfig(
+		*netnameFlag,
+		*symbolFlag,
+		*httpPortFlag,
+		*intervalFlag,
+		*proxyCntFlag,
+		*payoutFlag,
+		*hcaptchaSiteKeyFlag,
+		*hcaptchaSecretFlag,
+		*logoFlag,
+		*backgroundFlag,
+		*frontendTypeFlag,
+		*paidCustomerFlag,
+	)
+
 	go server.NewServer(txBuilder, config).Run()
 
 	c := make(chan os.Signal, 1)

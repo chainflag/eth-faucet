@@ -28,6 +28,8 @@ type infoResponse struct {
 	HcaptchaSiteKey string `json:"hcaptcha_sitekey,omitempty"`
 	LogoURL         string `json:"logo_url"`
 	BackgroundURL   string `json:"background_url"`
+	PaidCustomer    bool   `json:"paid_customer"`
+	FrontendType    string `json:"frontend_type"`
 }
 
 type malformedRequest struct {
