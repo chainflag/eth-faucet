@@ -4,20 +4,20 @@ import (
 	"context"
 	"math/big"
 	"reflect"
+	"sort"
+	"sync"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/agiledragon/gomonkey/v2"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind/backends"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"sync/atomic"
 	"github.com/stretchr/testify/require"
-	"time"
-	"sync"
-	"sort"
 )
 
 func TestTxBuilder(t *testing.T) {
