@@ -1,4 +1,6 @@
 {
   "singleQuote": true,
-  "svelteSortOrder": "options-scripts-markup-styles"
+  "svelteSortOrder": "options-scripts-markup-styles",
+  "parser": "svelte",
+  "plugins": ["prettier-plugin-svelte"]
 }

@@ -1,57 +1,38 @@
 <script>
+  // @ts-nocheck
+
   import { onMount } from 'svelte';
   import { getAddress } from '@ethersproject/address';
   import { CloudflareProvider } from '@ethersproject/providers';
   import { setDefaults as setToast, toast } from 'bulma-toast';
 
+  import BaseDesign from './components/BaseDesign.svelte';
+  import Redesign from './components/Redesign.svelte';
+
   let input = null;
   let faucetInfo = {
     account: '0x0000000000000000000000000000000000000000',
     network: 'testnet',
-    payout: 1000000000,
+    payout: 1,
     symbol: 'ETH',
     hcaptcha_sitekey: '',
-    logo_url: '/gatewayfm-logo.svg',
-    background_url: 'background.jpg'
+    frontend_type: 'base',
+    paid_customer: false,
   };
+
+  const paidCustomer = faucetInfo.paid_customer;
+  const baseFrontendType = faucetInfo.frontend_type === 'base';
+  const redesignFrontendType = faucetInfo.frontend_type === 'redesign';
 
   let mounted = false;
   let hcaptchaLoaded = false;
-
-  function gweiToEth(gwei) {
-      let str = gwei.toString();
-      let len = str.length;
-
-      // Add leading zeros if necessary
-      if (len <= 9) {
-          str = '0'.repeat(9 - len) + str;
-          len = str.length;
-      }
-
-      // Insert decimal point
-      str = str.slice(0, len - 9) + '.' + str.slice(len - 9);
-
-      // Add leading zero if necessary
-      if (str.startsWith('.')) {
-          str = '0' + str;
-      }
-
-      // Remove trailing zeros
-      str = str.replace(/0+$/, '');
-
-      // Remove trailing decimal point
-      if (str.endsWith('.')) {
-          str = str.slice(0, -1);
-      }
-
-      return str;
-  }
 
   onMount(async () => {
     const res = await fetch('/api/info');
     faucetInfo = await res.json();
     mounted = true;
   });
+
 
   window.hcaptchaOnLoad = () => {
     hcaptchaLoaded = true;
@@ -69,6 +50,7 @@
   }
 
   setToast({
+    message: '',
     position: 'bottom-center',
     dismissible: true,
     pauseOnHover: true,
@@ -76,7 +58,7 @@
     animate: { in: 'fadeIn', out: 'fadeOut' },
   });
 
-  async function handleRequest() {
+  async function handleRequest(input) {
     let address = input;
     if (address === null) {
       toast({ message: 'input required', type: 'is-warning' });
@@ -88,7 +70,7 @@
         const provider = new CloudflareProvider();
         address = await provider.resolveName(address);
         if (!address) {
-          toast({ message: 'invalid ENS name', type: 'is-warning' });
+          toast({ message: 'invalid name', type: 'is-warning' });
           return;
         }
       } catch (error) {
@@ -105,9 +87,7 @@
     }
 
     try {
-      let headers = {
-        'Content-Type': 'application/json',
-      };
+      let headers = { 'Content-Type': 'application/json' };
 
       if (hcaptchaLoaded) {
         const { response } = await window.hcaptcha.execute(widgetID, {
@@ -119,9 +99,7 @@
       const res = await fetch('/api/claim', {
         method: 'POST',
         headers,
-        body: JSON.stringify({
-          address,
-        }),
+        body: JSON.stringify({ address }),
       });
 
       let { msg } = await res.json();
@@ -148,96 +126,8 @@
   {/if}
 </svelte:head>
 
-<main>
-  <section class="hero is-info is-fullheight" style='background-image: url({faucetInfo.background_url})'>
-    <div class="hero-head">
-      <nav class="navbar">
-        <div class="container">
-          <div class="navbar-brand">
-            <a class="navbar-item" href="../..">
-              <span class="icon icon-brand">
-                <img src={faucetInfo.logo_url} alt="logo"/>
-              </span>
-              <span><b>{faucetInfo.symbol} Faucet</b></span>
-            </a>
-          </div>
-          <div id="navbarMenu" class="navbar-menu">
-            <div class="navbar-end">
-              <span class="navbar-item">
-                <a
-                  class="button is-white is-outlined"
-                  href="https://github.com/chainflag/eth-faucet"
-                >
-                  <span class="icon">
-                    <i class="fa fa-github" />
-                  </span>
-                  <span>View Source</span>
-                </a>
-              </span>
-            </div>
-          </div>
-        </div>
-      </nav>
-    </div>
-
-    <div class="hero-body">
-      <div class="container has-text-centered">
-        <div class="column is-6 is-offset-3">
-          <h1 class="title">
-            Receive {gweiToEth(faucetInfo.payout)}
-            {faucetInfo.symbol} per request
-          </h1>
-          <h2 class="subtitle">
-            Serving from {faucetInfo.account}
-          </h2>
-          <div id="hcaptcha" data-size="invisible"></div>
-          <div class="box">
-            <div class="field is-grouped">
-              <p class="control is-expanded">
-                <input
-                  bind:value={input}
-                  class="input is-rounded"
-                  type="text"
-                  placeholder="Enter your address or ENS name"
-                />
-              </p>
-              <p class="control">
-                <button
-                  on:click={handleRequest}
-                  class="button is-primary is-rounded"
-                >
-                  Request
-                </button>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-</main>
-
-<style>
-
-	.icon-brand {
-		width: 5rem;
-		margin: 1rem;
-	}
-
-  .hero.is-info {
-    background:
-      linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
-      no-repeat center center fixed;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    background-size: cover;
-  }
-  .hero .subtitle {
-    padding: 3rem 0;
-    line-height: 1.5;
-  }
-  .box {
-    border-radius: 19px;
-  }
-</style>
+{#if baseFrontendType}
+  <BaseDesign {faucetInfo} {input} {handleRequest} />
+{:else if redesignFrontendType}
+  <Redesign {faucetInfo} {input} {handleRequest} />
+{/if}
