@@ -6,7 +6,6 @@ import (
 	"math/big"
 	"strings"
 	"sync/atomic"
-	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -28,7 +27,6 @@ type TxBuild struct {
 	fromAddress     common.Address
 	nonce           uint64
 	supportsEIP1559 bool
-	lastTimeRefresh time.Time
 }
 
 func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.Int) (TxBuilder, error) {
@@ -55,7 +53,6 @@ func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.In
 		signer:          types.NewLondonSigner(chainID),
 		fromAddress:     crypto.PubkeyToAddress(privateKey.PublicKey),
 		supportsEIP1559: supportsEIP1559,
-		lastTimeRefresh: time.Time{},
 	}
 	txBuilder.refreshNonce(context.Background())
 
@@ -73,12 +70,6 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 
 	var err error
 	var unsignedTx *types.Transaction
-
-	if time.Since(b.lastTimeRefresh) > 1*time.Minute {
-		b.refreshNonce(ctx)
-		nonce = b.nonce
-		_ = b.getAndIncrementNonce()
-	}
 
 	if b.supportsEIP1559 {
 		unsignedTx, err = b.buildEIP1559Tx(ctx, &toAddress, value, gasLimit, nonce)
@@ -160,7 +151,6 @@ func (b *TxBuild) refreshNonce(ctx context.Context) {
 		return
 	}
 
-	b.lastTimeRefresh = time.Now()
 	atomic.StoreUint64(&b.nonce, nonce)
 }
 
