@@ -9,11 +9,11 @@
   export let input;
   export let handleRequest;
 
-  const paidCustomer = faucetInfo.paid_customer;
-
+  
   const path = window.location.pathname;
   let network = '';
-
+  
+  $: paidCustomer = faucetInfo.paid_customer;;
   network = path.includes('stavanger')
     ? 'Stavanger Testnet'
     : path.substring(1).split('.')[0].replace('-', ' ');
