@@ -20,8 +20,8 @@
     paid_customer: false,
   };
 
-  const baseFrontendType = faucetInfo.frontend_type === 'base';
-  const redesignFrontendType = faucetInfo.frontend_type === 'redesign';
+  let baseFrontendType;
+  let redesignFrontendType;
 
   let mounted = false;
   let hcaptchaLoaded = false;
@@ -30,8 +30,9 @@
     const res = await fetch('/api/info');
     faucetInfo = await res.json();
     mounted = true;
+    baseFrontendType = faucetInfo.frontend_type === 'base';
+    redesignFrontendType = faucetInfo.frontend_type === 'redesign';
   });
-
 
   window.hcaptchaOnLoad = () => {
     hcaptchaLoaded = true;
