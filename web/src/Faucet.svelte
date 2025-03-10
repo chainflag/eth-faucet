@@ -124,8 +124,8 @@
   {/if}
 </svelte:head>
 
-{#if !baseFrontendType}
+{#if baseFrontendType}
   <BaseDesign {faucetInfo} {input} {handleRequest} />
-{:else if !redesignFrontendType}
+{:else if redesignFrontendType}
   <Redesign {faucetInfo} {input} {handleRequest} />
 {/if}
