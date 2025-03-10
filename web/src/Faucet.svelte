@@ -16,7 +16,7 @@
     payout: 1,
     symbol: 'ETH',
     hcaptcha_sitekey: '',
-    frontend_type: '',
+    frontend_type: 'base',
     paid_customer: false,
   };
 
