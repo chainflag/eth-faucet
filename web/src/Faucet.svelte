@@ -16,11 +16,10 @@
     payout: 1,
     symbol: 'ETH',
     hcaptcha_sitekey: '',
-    frontend_type: 'base',
+    frontend_type: '',
     paid_customer: false,
   };
 
-  const paidCustomer = faucetInfo.paid_customer;
   const baseFrontendType = faucetInfo.frontend_type === 'base';
   const redesignFrontendType = faucetInfo.frontend_type === 'redesign';
 
