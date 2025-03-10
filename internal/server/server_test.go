@@ -30,6 +30,15 @@ func (m *MockTxBuilder) Transfer(ctx context.Context, to string, value *big.Int)
 	return args.Get(0).(common.Hash), args.Error(1)
 }
 
+// GetAllSenders returns all sender addresses
+func (m *MockTxBuilder) GetAllSenders() []common.Address {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).([]common.Address)
+}
+
 func setupTestServer(mockBuilder chain.TxBuilder) *Server {
 	cfg := &Config{
 		httpPort:   8080,
@@ -47,6 +56,7 @@ func TestHandleClaim(t *testing.T) {
 	expectedAddress := "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
 	expectedAmount := chain.EtherToWei(1.0)
 	mockBuilder.On("Transfer", mock.Anything, expectedAddress, expectedAmount).Return(common.Hash{1}, nil)
+	mockBuilder.On("GetAllSenders").Return(nil)
 
 	server := setupTestServer(mockBuilder)
 	reqBody := strings.NewReader(fmt.Sprintf(`{"address": "%s"}`, expectedAddress))
@@ -70,12 +80,12 @@ func TestHandleClaim(t *testing.T) {
 	}
 
 	mockBuilder.AssertExpectations(t)
-
 }
 
 func TestHandleInfo(t *testing.T) {
 	mockBuilder := new(MockTxBuilder)
 	mockBuilder.On("Sender").Return(common.HexToAddress("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"))
+	mockBuilder.On("GetAllSenders").Return(nil)
 
 	server := setupTestServer(mockBuilder)
 	req, err := http.NewRequest("GET", "/api/info", nil)

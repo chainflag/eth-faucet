@@ -29,10 +29,11 @@ var (
 	netnameFlag  = flag.String("faucet.name", "testnet", "Network name to display on the frontend")
 	symbolFlag   = flag.String("faucet.symbol", "ETH", "Token symbol to display on the frontend")
 
-	keyJSONFlag  = flag.String("wallet.keyjson", os.Getenv("KEYSTORE"), "Keystore file to fund user requests with")
-	keyPassFlag  = flag.String("wallet.keypass", "password.txt", "Passphrase text file to decrypt keystore")
-	privKeyFlag  = flag.String("wallet.privkey", os.Getenv("PRIVATE_KEY"), "Private key hex to fund user requests with")
-	providerFlag = flag.String("wallet.provider", os.Getenv("WEB3_PROVIDER"), "Endpoint for Ethereum JSON-RPC connection")
+	keyJSONFlag     = flag.String("wallet.keyjson", os.Getenv("KEYSTORE"), "Keystore file to fund user requests with")
+	keyPassFlag     = flag.String("wallet.keypass", "password.txt", "Passphrase text file to decrypt keystore")
+	privKeyFlag     = flag.String("wallet.privkey", os.Getenv("PRIVATE_KEY"), "Private key hex to fund user requests with")
+	providerFlag    = flag.String("wallet.provider", os.Getenv("WEB3_PROVIDER"), "Endpoint for Ethereum JSON-RPC connection")
+	loadBalanceFlag = flag.Bool("wallet.loadbalance", false, "Enable load balancing across multiple addresses")
 
 	hcaptchaSiteKeyFlag = flag.String("hcaptcha.sitekey", os.Getenv("HCAPTCHA_SITEKEY"), "hCaptcha sitekey")
 	hcaptchaSecretFlag  = flag.String("hcaptcha.secret", os.Getenv("HCAPTCHA_SECRET"), "hCaptcha secret")
@@ -47,20 +48,69 @@ func init() {
 }
 
 func Execute() {
-	privateKey, err := getPrivateKeyFromFlags()
-	if err != nil {
-		panic(fmt.Errorf("failed to read private key: %w", err))
+	var privateKeys []*ecdsa.PrivateKey
+	var err error
+
+	if *privKeyFlag != "" {
+		// Handle multiple private keys separated by commas
+		hexkeys := strings.Split(*privKeyFlag, ",")
+		for _, hexkey := range hexkeys {
+			hexkey = strings.TrimSpace(hexkey)
+			if chain.Has0xPrefix(hexkey) {
+				hexkey = hexkey[2:]
+			}
+			pk, err := crypto.HexToECDSA(hexkey)
+			if err != nil {
+				panic(fmt.Errorf("failed to parse private key: %w", err))
+			}
+			privateKeys = append(privateKeys, pk)
+		}
+	} else if *keyJSONFlag != "" {
+		// Handle multiple keystore files separated by commas
+		keystoreFiles := strings.Split(*keyJSONFlag, ",")
+		for _, keystoreFile := range keystoreFiles {
+			keystoreFile = strings.TrimSpace(keystoreFile)
+			keyfile, err := chain.ResolveKeyfilePath(keystoreFile)
+			if err != nil {
+				panic(fmt.Errorf("failed to resolve keyfile path: %w", err))
+			}
+			password, err := os.ReadFile(*keyPassFlag)
+			if err != nil {
+				panic(fmt.Errorf("failed to read password file: %w", err))
+			}
+			pk, err := chain.DecryptKeyfile(keyfile, strings.TrimRight(string(password), "\r\n"))
+			if err != nil {
+				panic(fmt.Errorf("failed to decrypt keyfile: %w", err))
+			}
+			privateKeys = append(privateKeys, pk)
+		}
+	} else {
+		panic(errors.New("missing private key or keystore"))
 	}
+
+	if len(privateKeys) == 0 {
+		panic(errors.New("no valid private keys provided"))
+	}
+
 	var chainID *big.Int
 	if value, ok := chainIDMap[strings.ToLower(*netnameFlag)]; ok {
 		chainID = big.NewInt(int64(value))
 	}
 
-	txBuilder, err := chain.NewTxBuilder(*providerFlag, privateKey, chainID)
+	var txBuilder chain.TxBuilder
+	if len(privateKeys) > 1 && *loadBalanceFlag {
+		// Use load balancer with multiple keys
+		txBuilder, err = chain.NewTxBuilderLoadBalancer(*providerFlag, privateKeys, chainID)
+	} else {
+		// Use single key (first one if multiple were provided)
+		txBuilder, err = chain.NewTxBuilder(*providerFlag, privateKeys[0], chainID)
+	}
+
 	if err != nil {
 		panic(fmt.Errorf("cannot connect to web3 provider: %w", err))
 	}
-	config := server.NewConfig(*netnameFlag, *symbolFlag, *httpPortFlag, *intervalFlag, *proxyCntFlag, *payoutFlag, *hcaptchaSiteKeyFlag, *hcaptchaSecretFlag)
+
+	config := server.NewConfig(*netnameFlag, *symbolFlag, *httpPortFlag, *intervalFlag, *proxyCntFlag, *payoutFlag, *hcaptchaSiteKeyFlag, *hcaptchaSecretFlag, *loadBalanceFlag)
 	go server.NewServer(txBuilder, config).Run()
 
 	c := make(chan os.Signal, 1)

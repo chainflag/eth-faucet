@@ -21,11 +21,11 @@ type claimResponse struct {
 }
 
 type infoResponse struct {
-	Account         string `json:"account"`
-	Network         string `json:"network"`
-	Payout          string `json:"payout"`
-	Symbol          string `json:"symbol"`
-	HcaptchaSiteKey string `json:"hcaptcha_sitekey,omitempty"`
+	Accounts        []string `json:"accounts"`
+	Network         string   `json:"network"`
+	Symbol          string   `json:"symbol"`
+	Payout          string   `json:"payout"`
+	HcaptchaSiteKey string   `json:"hcaptchaSiteKey,omitempty"`
 }
 
 type malformedRequest struct {
