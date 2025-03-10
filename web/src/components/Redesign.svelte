@@ -9,6 +9,8 @@
   export let input;
   export let handleRequest;
 
+  const paidCustomer = faucetInfo.paid_customer;
+
   const path = window.location.pathname;
   let network = '';
 
@@ -22,7 +24,6 @@
 
     window.location.href = mailtoLink;
   };
-
 </script>
 
 <main>
@@ -32,26 +33,41 @@
         <div class="container">
           <div class="navbar-brand">
             <a class="navbar-item" href="https://gateway.fm/">
-              <img src={logo} alt="logo" />
+              <img src="../../public/logo.svg" alt="logo" />
             </a>
-
-            <Navigation />
+            {#if !paidCustomer}
+              <Navigation />
+            {/if}
           </div>
           <div id="navbarMenu" class="navbar-menu">
             <div class="navbar-end">
-              <a
-                href="https://presto.gateway.fm/onboarding"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <button class="button is-primary is-rounded">
-                  Deploy rollup <img
-                    src={arrowRight}
-                    class="icon arrow-right"
-                    alt="arrow"
-                  />
-                </button></a
-              >
+              {#if !paidCustomer}
+                <a
+                  href="https://presto.gateway.fm/onboarding"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <button class="button is-primary is-rounded">
+                    Deploy rollup <img
+                      src={arrowRight}
+                      class="icon arrow-right"
+                      alt="arrow"
+                    />
+                  </button></a
+                >
+              {:else}
+                <span class="navbar-item">
+                  <a
+                    class="button is-white is-outlined"
+                    href="https://github.com/chainflag/eth-faucet"
+                  >
+                    <span class="icon">
+                      <i class="fa fa-github" />
+                    </span>
+                    <span>View Source</span>
+                  </a>
+                </span>
+              {/if}
             </div>
           </div>
         </div>
@@ -98,31 +114,34 @@
                 >
                   Request
                 </button>
-
-                <div class="box-offer">
-                  Claim 1 POL test token for development. If you need additional
-                  tokens for extensive testing, please
-                  <!-- svelte-ignore a11y-invalid-attribute -->
-                  <a
-                    class="link"
-                    href="#"
-                    role="button"
-                    on:click={() =>
-                      openMessageWindow('Additional tokens request')}
-                  >
-                    contact support
-                  </a>
-                </div>
+                {#if !paidCustomer}
+                  <div class="box-offer">
+                    Claim 1 {faucetInfo.symbol} test token for development. If you
+                    need additional tokens for extensive testing, please
+                    <!-- svelte-ignore a11y-invalid-attribute -->
+                    <a
+                      class="link"
+                      href="#"
+                      role="button"
+                      on:click={() =>
+                        openMessageWindow('Additional tokens request')}
+                    >
+                      contact support
+                    </a>
+                  </div>
+                {/if}
               </div>
             </div>
           </div>
-          <div class="box-logo">
-            Powered by <a
-              class="navbar-item"
-              href="https://gateway.fm/"
-              target="_blank"><img src={logo} alt="Gatewayfm" /></a
-            >
-          </div>
+          {#if !paidCustomer}
+            <div class="box-logo">
+              Powered by <a
+                class="navbar-item"
+                href="https://gateway.fm/"
+                target="_blank"><img src={logo} alt="Gatewayfm" /></a
+              >
+            </div>
+          {/if}
         </div>
       </div>
     </div>
