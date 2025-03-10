@@ -9,11 +9,10 @@
   export let input;
   export let handleRequest;
 
-  
   const path = window.location.pathname;
   let network = '';
-  
-  $: paidCustomer = faucetInfo.paid_customer;;
+
+  $: paidCustomer = faucetInfo.paid_customer;
   network = path.includes('stavanger')
     ? 'Stavanger Testnet'
     : path.substring(1).split('.')[0].replace('-', ' ');
@@ -58,7 +57,7 @@
               {:else}
                 <span class="navbar-item">
                   <a
-                    class="button is-white is-outlined"
+                    class="button-link is-white is-outlined"
                     href="https://github.com/chainflag/eth-faucet"
                   >
                     <span class="icon">
@@ -179,7 +178,22 @@
     text-decoration: underline;
     cursor: pointer;
   }
-  .button {
+
+  .button-link {
+    gap: 16px;
+    padding: 6px 12px;
+    cursor: pointer;
+    border: 1px solid #676e73;
+    color: #676e73 !important;
+    border-radius: 6px;
+    &:hover {
+      border: 1px solid #8950fa;
+      background-color: rgba(137, 80, 250, 0.1);
+      color: #8950fa !important;
+      opacity: 0.9;
+    }
+  }
+  .button.is-primary {
     display: flex;
     justify-content: center;
     align-items: center;
