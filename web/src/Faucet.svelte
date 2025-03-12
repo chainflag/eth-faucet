@@ -10,12 +10,15 @@
   import Redesign from './components/Redesign.svelte';
 
   let input = null;
+
   let faucetInfo = {
     account: '0x0000000000000000000000000000000000000000',
     network: 'testnet',
-    payout: 1,
+    payout: 1000000000,
     symbol: 'ETH',
     hcaptcha_sitekey: '',
+    logo_url: '/gatewayfm-logo.svg',
+    background_url: 'background.jpg',
     frontend_type: 'base',
     paid_customer: false,
   };
@@ -23,11 +26,48 @@
   let mounted = false;
   let hcaptchaLoaded = false;
 
+  function gweiToEth(gwei) {
+    let str = gwei.toString();
+    let len = str.length;
+
+    // Add leading zeros if necessary
+    if (len <= 9) {
+      str = '0'.repeat(9 - len) + str;
+      len = str.length;
+    }
+
+    // Insert decimal point
+    str = str.slice(0, len - 9) + '.' + str.slice(len - 9);
+
+    // Add leading zero if necessary
+    if (str.startsWith('.')) {
+      str = '0' + str;
+    }
+
+    // Remove trailing zeros
+    str = str.replace(/0+$/, '');
+
+    // Remove trailing decimal point
+    if (str.endsWith('.')) {
+      str = str.slice(0, -1);
+    }
+
+    return str;
+  }
+
   onMount(async () => {
     const res = await fetch('/api/info');
     faucetInfo = await res.json();
     mounted = true;
   });
+
+  window.hcaptchaOnLoad = () => {
+    hcaptchaLoaded = true;
+  };
+
+  $: document.title = `${faucetInfo.symbol} ${capitalize(
+    faucetInfo.network,
+  )} Faucet`;
 
   window.hcaptchaOnLoad = () => {
     hcaptchaLoaded = true;
@@ -56,7 +96,7 @@
     animate: { in: 'fadeIn', out: 'fadeOut' },
   });
 
-  async function handleRequest(input) {
+  async function handleRequest() {
     let address = input;
     if (address === null) {
       toast({ message: 'input required', type: 'is-warning' });
@@ -68,7 +108,7 @@
         const provider = new CloudflareProvider();
         address = await provider.resolveName(address);
         if (!address) {
-          toast({ message: 'invalid name', type: 'is-warning' });
+          toast({ message: 'invalid ENS name', type: 'is-warning' });
           return;
         }
       } catch (error) {
@@ -85,7 +125,9 @@
     }
 
     try {
-      let headers = { 'Content-Type': 'application/json' };
+      let headers = {
+        'Content-Type': 'application/json',
+      };
 
       if (hcaptchaLoaded) {
         const { response } = await window.hcaptcha.execute(widgetID, {
@@ -97,7 +139,9 @@
       const res = await fetch('/api/claim', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ address }),
+        body: JSON.stringify({
+          address,
+        }),
       });
 
       let { msg } = await res.json();
@@ -107,7 +151,6 @@
       console.error(err);
     }
   }
-
   function capitalize(str) {
     const lower = str.toLowerCase();
     return str.charAt(0).toUpperCase() + lower.slice(1);
@@ -125,7 +168,7 @@
 </svelte:head>
 
 {#if baseFrontendType}
-  <BaseDesign {faucetInfo} {input} {handleRequest} />
+  <BaseDesign {faucetInfo} {input} {handleRequest} {gweiToEth} />
 {:else if redesignFrontendType}
-  <Redesign {faucetInfo} {input} {handleRequest} />
+  <Redesign {faucetInfo} {input} {handleRequest} {gweiToEth} />
 {/if}

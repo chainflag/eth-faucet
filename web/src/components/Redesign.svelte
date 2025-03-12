@@ -8,14 +8,9 @@
   export let faucetInfo;
   export let input;
   export let handleRequest;
-
-  const path = window.location.pathname;
-  let network = '';
+  export let gweiToEth;
 
   $: paidCustomer = faucetInfo.paid_customer;
-  network = path.includes('stavanger')
-    ? 'Stavanger Testnet'
-    : path.substring(1).split('.')[0].replace('-', ' ');
 
   const openMessageWindow = (subject, email) => {
     const emailSupport = 'support+presto@gateway.fm';
@@ -26,13 +21,18 @@
 </script>
 
 <main>
-  <section class="hero is-info is-fullheight">
+  <section
+    class="hero is-info is-fullheight"
+    style="background-image: url({faucetInfo.background_url})"
+  >
     <div class="hero-head">
       <nav class="navbar">
         <div class="container">
           <div class="navbar-brand">
             <a class="navbar-item" href="https://gateway.fm/">
-              <img src="../../public/logo.svg" alt="logo" />
+              <span class="icon icon-brand">
+                <img src={faucetInfo.logo_url} alt="logo" />
+              </span>
             </a>
             {#if !paidCustomer}
               <Navigation />
@@ -54,18 +54,6 @@
                     />
                   </button></a
                 >
-              {:else}
-                <span class="navbar-item">
-                  <a
-                    class="button-link is-white is-outlined"
-                    href="https://github.com/chainflag/eth-faucet"
-                  >
-                    <span class="icon">
-                      <i class="fa fa-github" />
-                    </span>
-                    <span>View Source</span>
-                  </a>
-                </span>
               {/if}
             </div>
           </div>
@@ -78,11 +66,11 @@
         <div class="column is-7 is-offset-3 centered-column">
           <div class="network">
             <img src={networkIcon} alt="logo" />
-            <div>{network}</div>
+            <div>{faucetInfo.network}</div>
           </div>
           <div class="title">
             Receive <div class="gas-token">
-              {faucetInfo.payout}
+              {gweiToEth(faucetInfo.payout)}
               {faucetInfo.symbol}
             </div>
           </div>
@@ -179,20 +167,6 @@
     cursor: pointer;
   }
 
-  .button-link {
-    gap: 16px;
-    padding: 6px 12px;
-    cursor: pointer;
-    border: 1px solid #676e73;
-    color: #676e73 !important;
-    border-radius: 6px;
-    &:hover {
-      border: 1px solid #8950fa;
-      background-color: rgba(137, 80, 250, 0.1);
-      color: #8950fa !important;
-      opacity: 0.9;
-    }
-  }
   .button.is-primary {
     display: flex;
     justify-content: center;
@@ -246,7 +220,9 @@
     letter-spacing: 0px;
   }
   .hero.is-info {
-    background: url('/background.jpg') no-repeat center center fixed;
+    background:
+      linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+      no-repeat center center fixed;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
@@ -290,5 +266,10 @@
   .icon {
     width: 16px;
     height: 16px;
+  }
+
+  .icon-brand {
+    width: 5rem;
+    margin: 1rem;
   }
 </style>
