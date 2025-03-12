@@ -4,7 +4,8 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"math/big"
-	"time"
+	"strings"
+	"sync/atomic"
 
 	"sync"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	log "github.com/sirupsen/logrus"
 )
 
 type TxBuilder interface {
@@ -21,16 +23,12 @@ type TxBuilder interface {
 }
 
 type TxBuild struct {
-	client               bind.ContractTransactor
-	privateKey           *ecdsa.PrivateKey
-	signer               types.Signer
-	fromAddress          common.Address
-	nonce                uint64
-	supportsEIP1559      bool
-	nonceRefreshEvery    uint64
-	nonceRefreshInterval time.Duration
-	lastRefreshTime      time.Time
-	nonceMu              sync.Mutex
+	client          bind.ContractTransactor
+	privateKey      *ecdsa.PrivateKey
+	signer          types.Signer
+	fromAddress     common.Address
+	nonce           uint64
+	supportsEIP1559 bool
 }
 
 func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.Int) (TxBuilder, error) {
@@ -52,16 +50,13 @@ func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.In
 	}
 
 	txBuilder := &TxBuild{
-		client:               client,
-		privateKey:           privateKey,
-		signer:               types.NewLondonSigner(chainID),
-		fromAddress:          crypto.PubkeyToAddress(privateKey.PublicKey),
-		supportsEIP1559:      supportsEIP1559,
-		lastRefreshTime:      time.Time{},
-		nonceMu:              sync.Mutex{},
-		nonceRefreshInterval: time.Minute * 1,
-		nonceRefreshEvery:    100,
+		client:          client,
+		privateKey:      privateKey,
+		signer:          types.NewLondonSigner(chainID),
+		fromAddress:     crypto.PubkeyToAddress(privateKey.PublicKey),
+		supportsEIP1559: supportsEIP1559,
 	}
+	txBuilder.refreshNonce(context.Background())
 
 	return txBuilder, nil
 }
@@ -73,14 +68,10 @@ func (b *TxBuild) Sender() common.Address {
 func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (common.Hash, error) {
 	gasLimit := uint64(21000)
 	toAddress := common.HexToAddress(to)
+	nonce := b.getAndIncrementNonce()
 
 	var err error
 	var unsignedTx *types.Transaction
-
-	nonce, err := b.getNextNonce(ctx)
-	if err != nil {
-		return common.Hash{}, err
-	}
 
 	if b.supportsEIP1559 {
 		unsignedTx, err = b.buildEIP1559Tx(ctx, &toAddress, value, gasLimit, nonce)
@@ -98,6 +89,9 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 	}
 
 	if err = b.client.SendTransaction(ctx, signedTx); err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "nonce") {
+			b.refreshNonce(context.Background())
+		}
 		return common.Hash{}, err
 	}
 
@@ -145,21 +139,21 @@ func (b *TxBuild) buildLegacyTx(ctx context.Context, to *common.Address, value *
 	}), nil
 }
 
-func (b *TxBuild) getNextNonce(ctx context.Context) (uint64, error) {
-	b.nonceMu.Lock()
-	defer b.nonceMu.Unlock()
-	b.nonce++
-	// fetch from RPC every n txs, or after refresh interval - whichever is hit first
-	if time.Since(b.lastRefreshTime) > b.nonceRefreshInterval || b.nonce%b.nonceRefreshEvery == 0 {
-		n, err := b.client.PendingNonceAt(ctx, b.fromAddress)
-		if err != nil {
-			return 0, err
-		}
-		b.nonce = n
-		b.lastRefreshTime = time.Now()
+func (b *TxBuild) getAndIncrementNonce() uint64 {
+	return atomic.AddUint64(&b.nonce, 1) - 1
+}
+
+func (b *TxBuild) refreshNonce(ctx context.Context) {
+	nonce, err := b.client.PendingNonceAt(ctx, b.Sender())
+	if err != nil {
+		log.WithFields(log.Fields{
+			"address": b.Sender(),
+			"error":   err,
+		}).Error("failed to refresh account nonce")
+		return
 	}
-	nonce := b.nonce
-	return nonce, nil
+
+	atomic.StoreUint64(&b.nonce, nonce)
 }
 
 func checkEIP1559Support(client *ethclient.Client) (bool, error) {

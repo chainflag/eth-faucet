@@ -82,18 +82,20 @@ Then run the faucet application without the wallet command-line flags:
 
 The following are the available command-line flags(excluding above wallet flags):
 
-| Flag              | Description                                      | Default Value |
-|-------------------|--------------------------------------------------|---------------|
-| -httpport         | Listener port to serve HTTP connection           | 8080          |
-| -proxycount       | Count of reverse proxies in front of the server  | 0             |
-| -faucet.amount    | Number of Gwei to transfer per user request      | 1000000000    |
-| -faucet.minutes   | Number of minutes to wait between funding rounds | 1440          |
-| -faucet.name      | Network name to display on the frontend          | testnet       |
-| -faucet.symbol    | Token symbol to display on the frontend          | ETH           |
-| -hcaptcha.sitekey | hCaptcha sitekey                                 |               |
-| -hcaptcha.secret  | hCaptcha secret                                  |               |
-| -frontend.logo    | Logo URL to display on the frontend              | /gatewayfm-logo.svg |
-| -frontend.background | Background to display on the frontend         | /background.jpg |
+| Flag                 | Description                                       | Default Value       |
+|----------------------|---------------------------------------------------|---------------------|
+| -httpport            | Listener port to serve HTTP connection            | 8080                |
+| -proxycount          | Count of reverse proxies in front of the server   | 0                   |
+| -faucet.amount       | Number of Gwei to transfer per user request       | 1000000000          |
+| -faucet.minutes      | Number of minutes to wait between funding rounds  | 1440                |
+| -faucet.name         | Network name to display on the frontend           | testnet             |
+| -faucet.symbol       | Token symbol to display on the frontend           | ETH                 |
+| -hcaptcha.sitekey    | hCaptcha sitekey                                  |                     |
+| -hcaptcha.secret     | hCaptcha secret                                   |                     |
+| -frontend.logo       | Logo URL to display on the frontend               | /gatewayfm-logo.svg |
+| -frontend.background | Background to display on the frontend             | /background.jpg     |
+| -frontend.type       | Type of Frontend to display (base, redesign)      | base                |
+| -faucet.paidcustomer | Whether the faucet will belong to a paid customer | false               |
 
 ### Docker deployment
 
