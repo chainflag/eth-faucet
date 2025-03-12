@@ -61,7 +61,7 @@
               </p>
               <p class="control">
                 <button
-                  on:click={handleRequest}
+                  on:click={() => handleRequest(input)}
                   class="button is-primary is-rounded"
                 >
                   Request

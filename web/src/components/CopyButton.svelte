@@ -11,7 +11,7 @@
 </script>
 
 <button class="button-copy" on:click={copyToClipboard}>
-  <img src={copyIcon} alt={text} />
+  <img class="button-copy-img" src={copyIcon} alt={text} />
   {#if tooltipVisible}
     <span class="tooltip">Copied!</span>
   {/if}
@@ -42,4 +42,9 @@
     font-size: 12px;
     white-space: nowrap;
   }
+  @media (max-width: 768px) {
+    .button-copy-img {
+     min-width: 24px;
+     min-height: 24px;
+    }}
 </style>
