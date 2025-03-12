@@ -35,8 +35,8 @@ var (
 	privKeyFlag    = flag.String("wallet.privkey", os.Getenv("PRIVATE_KEY"), "Private key hex to fund user requests with")
 	providerFlag   = flag.String("wallet.provider", os.Getenv("WEB3_PROVIDER"), "Endpoint for Ethereum JSON-RPC connection")
 
-	frontendTypeFlag = flag.String("frontend.type", "base", "Type of frontend to generate. Values enum: 'base', 'redesign'.")
-	paidCustomerFlag = flag.Bool("faucet.paidcustomer", false, "Whether the faucet will belong to the paid customer")
+	frontendTypeFlag = flag.String("frontend.type", "redesign", "Type of frontend to generate. Values enum: 'base', 'redesign'.")
+	paidCustomerFlag = flag.Bool("faucet.paidcustomer", false, "Whether the faucet belongs to the paid customer")
 
 	hcaptchaSiteKeyFlag = flag.String("hcaptcha.sitekey", os.Getenv("HCAPTCHA_SITEKEY"), "hCaptcha sitekey")
 	hcaptchaSecretFlag  = flag.String("hcaptcha.secret", os.Getenv("HCAPTCHA_SECRET"), "hCaptcha secret")
