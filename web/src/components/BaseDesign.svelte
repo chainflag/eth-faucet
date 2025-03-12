@@ -2,18 +2,19 @@
   export let faucetInfo;
   export let input;
   export let handleRequest;
+  export let gweiToEth;
 
 </script>
 
 <main>
-  <section class="hero is-info is-fullheight">
+  <section class="hero is-info is-fullheight" style='background-image: url({faucetInfo.background_url})'>
     <div class="hero-head">
       <nav class="navbar">
         <div class="container">
           <div class="navbar-brand">
             <a class="navbar-item" href="../..">
-              <span class="icon">
-                <i class="fa fa-bath" />
+              <span class="icon icon-brand">
+                <img src={faucetInfo.logo_url} alt="logo"/>
               </span>
               <span><b>{faucetInfo.symbol} Faucet</b></span>
             </a>
@@ -41,7 +42,7 @@
       <div class="container has-text-centered">
         <div class="column is-6 is-offset-3">
           <h1 class="title">
-            Receive {faucetInfo.payout}
+            Receive {gweiToEth(faucetInfo.payout)}
             {faucetInfo.symbol} per request
           </h1>
           <h2 class="subtitle">
@@ -55,12 +56,12 @@
                   bind:value={input}
                   class="input is-rounded"
                   type="text"
-                  placeholder="Enter your address"
+                  placeholder="Enter your address or ENS name"
                 />
               </p>
               <p class="control">
                 <button
-                  on:click={() => handleRequest(input)}
+                  on:click={handleRequest}
                   class="button is-primary is-rounded"
                 >
                   Request
@@ -75,10 +76,10 @@
 </main>
 
 <style>
-  .hero.is-info {
+ .hero.is-info {
     background:
-      linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-      url('/background.jpg') no-repeat center center fixed;
+      linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+      no-repeat center center fixed;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
