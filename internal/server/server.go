@@ -85,6 +85,8 @@ func (s *Server) handleInfo() http.HandlerFunc {
 			HcaptchaSiteKey: s.cfg.hcaptchaSiteKey,
 			LogoURL:         s.cfg.logoURL,
 			BackgroundURL:   s.cfg.backgroundURL,
+			FrontendType:    s.cfg.frontendType,
+			PaidCustomer:    s.cfg.paidCustomer,
 		}, http.StatusOK)
 	}
 }
