@@ -270,6 +270,5 @@
 
   .icon-brand {
     width: 5rem;
-    margin: 1rem;
   }
 </style>
