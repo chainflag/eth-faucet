@@ -96,7 +96,7 @@
     animate: { in: 'fadeIn', out: 'fadeOut' },
   });
 
-  async function handleRequest() {
+  async function handleRequest(input) {
     let address = input;
     if (address === null) {
       toast({ message: 'input required', type: 'is-warning' });

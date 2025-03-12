@@ -18,6 +18,14 @@
 
     window.location.href = mailtoLink;
   };
+
+  function autoResize(event) {
+    const textarea = event.target;
+    textarea.style.height = 'auto'; // Reset height
+    textarea.style.height = `${textarea.scrollHeight}px`; // Set new height
+  }
+
+  
 </script>
 
 <main>
@@ -27,7 +35,7 @@
   >
     <div class="hero-head">
       <nav class="navbar">
-        <div class="container">
+        <div class="header-container">
           <div class="navbar-brand">
             <a class="navbar-item" href="https://gateway.fm/">
               <span class="icon icon-brand">
@@ -38,7 +46,7 @@
               <Navigation />
             {/if}
           </div>
-          <div id="navbarMenu" class="navbar-menu">
+          <div>
             <div class="navbar-end">
               {#if !paidCustomer}
                 <a
@@ -87,10 +95,11 @@
             </div>
             <div class="field is-grouped">
               <div class="control is-expanded">
-                <input
+                <textarea
                   bind:value={input}
                   class="input"
-                  type="text"
+                       rows="1"
+      on:input={autoResize}
                   placeholder="Enter your address"
                 />
               </div>
@@ -103,8 +112,8 @@
                 </button>
                 {#if !paidCustomer}
                   <div class="box-offer">
-                    Claim 1 {faucetInfo.symbol} test token for development. If you
-                    need additional tokens for extensive testing, please
+                    Claim 1 {faucetInfo.symbol} test token for development.<br/> If you
+                    need additional tokens for extensive testing,<br/> please
                     <!-- svelte-ignore a11y-invalid-attribute -->
                     <a
                       class="link"
@@ -136,6 +145,18 @@
 </main>
 
 <style>
+.input {
+  resize: none;
+    overflow: hidden;
+}
+  .header-container {
+    display: flex;
+    width: 100%;
+    padding-inline: 16px;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
   .hero {
     padding-top: 16px;
   }
@@ -219,6 +240,13 @@
     line-height: 80px;
     letter-spacing: 0px;
   }
+
+  @media (max-width: 768px) {
+    .title {
+      font-size: 38px;
+      line-height: 56px;
+    }
+  }
   .hero.is-info {
     background:
       linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
@@ -235,9 +263,21 @@
     align-items: center;
     font-size: 14px;
     font-weight: 500;
-    /* line-height: 24px; */
     letter-spacing: 0px;
     color: #161718;
+  }
+
+  @media (max-width: 992px) {
+    .subtitle {
+      font-size: 12px;
+    }
+  }
+  @media (max-width: 768px) {
+    .subtitle {
+      flex-direction: column;
+      font-size: 16px;
+      gap: 8px;
+    }
   }
   .hero .subtitle {
     line-height: 1.5;
