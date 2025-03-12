@@ -1,5 +1,8 @@
 <script>
+  import { onMount } from 'svelte';
+
   let isOpen = false;
+  let navbarRef;
 
   const navigationList = [
     { title: 'Rollup', url: 'https://gateway.fm/presto' },
@@ -9,16 +12,30 @@
     { title: 'About', url: 'https://gateway.fm/about' },
     { title: 'Careers', url: 'https://boards.eu.greenhouse.io/gatewayfm' },
   ];
+
+  function handleClickOutside(event) {
+    if (navbarRef && !navbarRef.contains(event.target)) {
+      isOpen = false;
+    }
+  }
+
+  onMount(() => {
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  });
 </script>
 
-<div class="navbar-container">
-  <button class="burger-menu" on:click={() => (isOpen = !isOpen)}>
-    ☰
-  </button>
+<div class="navbar-container" bind:this={navbarRef}>
+  <button class="burger-menu" on:click={() => (isOpen = !isOpen)}> ☰ </button>
 
   <nav class="navbar" class:open={isOpen}>
     {#each navigationList as { title, url }}
-      <a class="navbar-item" href={url} target="_blank" rel="noopener noreferrer">
+      <a
+        class="navbar-item"
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         {title}
       </a>
     {/each}
@@ -52,6 +69,7 @@
 
   .navbar-item:hover {
     color: #8950fa !important;
+    background-color: transparent !important;
   }
 
   @media (max-width: 768px) {
@@ -65,11 +83,15 @@
       flex-direction: column;
       position: absolute;
       top: 50px;
-      left: 0;
+      left: -70px;
       background: white;
-      /* min-width: 100%; */
       padding: 10px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 15px;
+    }
+    .navbar-item:hover {
+      color: white !important;
+      background-color: rgba(137, 80, 250, 0.5) !important;
     }
 
     .navbar.open {
