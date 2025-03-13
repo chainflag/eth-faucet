@@ -24,8 +24,6 @@
     textarea.style.height = 'auto'; // Reset height
     textarea.style.height = `${textarea.scrollHeight}px`; // Set new height
   }
-
-  
 </script>
 
 <main>
@@ -42,14 +40,17 @@
                 <img src={faucetInfo.logo_url} alt="logo" />
               </span>
             </a>
-            {#if !paidCustomer}
-              <Navigation />
-            {/if}
+            <div class="navbar-desktop">
+              {#if !paidCustomer}
+                <Navigation />
+              {/if}
+            </div>
           </div>
           <div>
             <div class="navbar-end">
               {#if !paidCustomer}
                 <a
+                  class="navbar-desktop"
                   href="https://presto.gateway.fm/onboarding"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -64,6 +65,11 @@
                 >
               {/if}
             </div>
+          </div>
+          <div class="navbar-mobile">
+            {#if !paidCustomer}
+              <Navigation />
+            {/if}
           </div>
         </div>
       </nav>
@@ -98,8 +104,8 @@
                 <textarea
                   bind:value={input}
                   class="input"
-                       rows="1"
-      on:input={autoResize}
+                  rows="1"
+                  on:input={autoResize}
                   placeholder="Enter your address"
                 />
               </div>
@@ -112,8 +118,9 @@
                 </button>
                 {#if !paidCustomer}
                   <div class="box-offer">
-                    Claim 1 {faucetInfo.symbol} test token for development.<br/> If you
-                    need additional tokens for extensive testing,<br/> please
+                    Claim 1 {faucetInfo.symbol} test token for development.<br
+                    />
+                    If you need additional tokens for extensive testing, please
                     <!-- svelte-ignore a11y-invalid-attribute -->
                     <a
                       class="link"
@@ -130,6 +137,24 @@
             </div>
           </div>
           {#if !paidCustomer}
+            <div class="deploy-btn-mobile">
+              <a
+                class="deploy-link-mobile"
+                href="https://presto.gateway.fm/onboarding"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <button class="button is-primary is-rounded">
+                  Deploy rollup <img
+                    src={arrowRight}
+                    class="icon arrow-right"
+                    alt="arrow"
+                  />
+                </button></a
+              >
+            </div>
+          {/if}
+          {#if !paidCustomer}
             <div class="box-logo">
               Powered by <a
                 class="navbar-item"
@@ -145,10 +170,13 @@
 </main>
 
 <style>
-.input {
-  resize: none;
+  .deploy-btn-mobile {
+    display: none;
+  }
+  .input {
+    resize: none;
     overflow: hidden;
-}
+  }
   .header-container {
     display: flex;
     width: 100%;
@@ -197,6 +225,10 @@
     gap: 16px;
   }
 
+  .button:hover {
+    opacity: 0.8;
+  }
+
   .box-offer {
     font-weight: 400;
     font-size: 12px;
@@ -240,13 +272,6 @@
     line-height: 80px;
     letter-spacing: 0px;
   }
-
-  @media (max-width: 768px) {
-    .title {
-      font-size: 38px;
-      line-height: 56px;
-    }
-  }
   .hero.is-info {
     background:
       linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
@@ -267,18 +292,10 @@
     color: #161718;
   }
 
-  @media (max-width: 992px) {
-    .subtitle {
-      font-size: 12px;
-    }
+  .navbar-mobile {
+    display: none;
   }
-  @media (max-width: 768px) {
-    .subtitle {
-      flex-direction: column;
-      font-size: 16px;
-      gap: 8px;
-    }
-  }
+
   .hero .subtitle {
     line-height: 1.5;
   }
@@ -310,5 +327,49 @@
 
   .icon-brand {
     width: 5rem;
+  }
+
+  @media (max-width: 992px) {
+    .subtitle {
+      font-size: 12px;
+    }
+
+    .navbar-mobile {
+      display: block;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .subtitle {
+      flex-direction: column;
+      font-size: 16px;
+      gap: 8px;
+    }
+
+    .title {
+      font-size: 38px;
+      line-height: 56px;
+    }
+    .navbar-desktop {
+      display: none;
+    }
+
+    .hero-body {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 1rem 1.5rem;
+    }
+    .deploy-link-mobile {
+      display: flex;
+      width: 80%;
+    }
+
+    .deploy-btn-mobile {
+      display: flex;
+      justify-content: center;
+      margin-top: 16px;
+      min-width: 100%;
+    }
   }
 </style>
