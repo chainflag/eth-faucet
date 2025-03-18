@@ -18,7 +18,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: gatewayfm/eth-faucet-generic:latest
+          images: gatewayfm/eth-faucet-generic
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -31,4 +31,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: gatewayfm/eth-faucet-generic:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
