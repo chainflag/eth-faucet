@@ -326,7 +326,7 @@
   }
 
   .icon-brand {
-    width: 5rem;
+    width: 8rem;
   }
 
   @media (max-width: 992px) {
