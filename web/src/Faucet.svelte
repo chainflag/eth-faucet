@@ -167,7 +167,7 @@
   {/if}
 </svelte:head>
 
-{#if baseFrontendType}
+{#if !baseFrontendType}
   <BaseDesign {faucetInfo} {input} {handleRequest} {gweiToEth} />
 {:else if redesignFrontendType}
   <Redesign {faucetInfo} {input} {handleRequest} {gweiToEth} />
