@@ -18,3 +18,5 @@
 .DS_Store
 
 password.txt
+
+node_modules/
