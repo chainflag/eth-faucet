@@ -2,33 +2,33 @@ package chain
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/ethclient/simulated"
 	"math/big"
 	"reflect"
 	"testing"
 
+	"sort"
+	"sync"
+	"sync/atomic"
+	"time"
+
 	"github.com/agiledragon/gomonkey/v2"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind/backends"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"sync/atomic"
 	"github.com/stretchr/testify/require"
-	"time"
-	"sync"
-	"sort"
 )
 
 func TestTxBuilder(t *testing.T) {
 	privateKey, _ := crypto.HexToECDSA("976f9f7772781ff6d1c93941129d417c49a209c674056a3cf5e27e225ee55fa8")
 	fromAddress := crypto.PubkeyToAddress(privateKey.PublicKey)
-	simClient := backends.NewSimulatedBackend(
-		core.GenesisAlloc{
-			fromAddress: {Balance: big.NewInt(10000000000000000)},
-		}, 10000000,
-	)
-	defer simClient.Close()
+	simBackend := simulated.NewBackend(types.GenesisAlloc{
+		fromAddress: {Balance: big.NewInt(10000000000000000)},
+	}, simulated.WithBlockGasLimit(10000000))
+	simClient := simBackend.Client()
+	defer simBackend.Close()
 	var s *backends.SimulatedBackend
 	patches := gomonkey.ApplyMethod(reflect.TypeOf(s), "SuggestGasPrice", func(_ *backends.SimulatedBackend, _ context.Context) (*big.Int, error) {
 		return big.NewInt(875000000), nil
@@ -49,7 +49,7 @@ func TestTxBuilder(t *testing.T) {
 	if err != nil {
 		t.Errorf("could not add tx to pending block: %v", err)
 	}
-	simClient.Commit()
+	simBackend.Commit()
 
 	block, err := simClient.BlockByNumber(bgCtx, big.NewInt(1))
 	if err != nil {
