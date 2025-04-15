@@ -1,24 +1,23 @@
+version: "2"
+
 run:
   timeout: 5m
+  relative-path-mode: gitroot
 
 linters:
-  disable-all: true
+  default: none
   enable:
-    - gosimple
     - govet
     - ineffassign
     - goconst
-    - goimports
     - misspell
-    - revive
     - unconvert
     - unused
-
-linters-settings:
-  misspell:
-    locale: US
-
-issues:
-  exclude-dirs:
-    - .github
-    - web
+  exclusions:
+    warn-unused: true
+    paths:
+      - web
+      - .github
+  settings:
+    misspell:
+      locale: US

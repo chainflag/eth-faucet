@@ -1,4 +1,4 @@
-FROM node:lts-alpine as frontend
+FROM node:lts-alpine AS frontend
 
 WORKDIR /frontend-build
 
@@ -8,7 +8,7 @@ RUN yarn install
 COPY web ./
 RUN yarn build
 
-FROM golang:1.17-alpine as backend
+FROM golang:1.23-alpine3.20 AS backend
 
 RUN apk add --no-cache gcc musl-dev linux-headers
 
