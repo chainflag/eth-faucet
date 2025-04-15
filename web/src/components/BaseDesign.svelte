@@ -19,6 +19,21 @@
               <span><b>{faucetInfo.symbol} Faucet</b></span>
             </a>
           </div>
+          <div id="navbarMenu" class="navbar-menu">
+            <div class="navbar-end">
+              <span class="navbar-item">
+                <a
+                  class="button is-white is-outlined"
+                  href="https://github.com/chainflag/eth-faucet"
+                >
+                  <span class="icon">
+                    <i class="fa fa-github" />
+                  </span>
+                  <span>View Source</span>
+                </a>
+              </span>
+            </div>
+          </div>
         </div>
       </nav>
     </div>
@@ -61,16 +76,6 @@
 </main>
 
 <style>
-
-  .navbar-item {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-  }
-  .icon-brand {
-    width: 6rem
-  }
  .hero.is-info {
     background:
       linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),

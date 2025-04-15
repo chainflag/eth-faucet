@@ -19,7 +19,7 @@
     hcaptcha_sitekey: '',
     logo_url: '/gatewayfm-logo.svg',
     background_url: 'background.jpg',
-    frontend_type: 're',
+    frontend_type: 'redesign',
     paid_customer: false,
   };
 
