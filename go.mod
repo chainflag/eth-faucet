@@ -1,6 +1,6 @@
 module github.com/chainflag/eth-faucet
 
-go 1.17
+go 1.23.0
 
 require (
 	github.com/agiledragon/gomonkey/v2 v2.12.0
