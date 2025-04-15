@@ -1,8 +1,5 @@
 {
   "scripts": {
     "build": "npm install -g yarn && cd web && yarn install && yarn vite build"
-  },
-  "dependencies": {
-    "elliptic": "^6.6.1"
   }
 }
