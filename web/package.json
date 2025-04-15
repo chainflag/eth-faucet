@@ -17,8 +17,8 @@
     "vite": "^5.3.5"
   },
   "dependencies": {
-    "@ethersproject/address": "^5.7.0",
-    "@ethersproject/providers": "^5.7.2",
+    "@ethersproject/address": "^5.8.0",
+    "@ethersproject/providers": "^5.8.0",
     "animate.css": "^4.1.1",
     "bulma": "^0.9.4",
     "bulma-toast": "^2.4.4"
