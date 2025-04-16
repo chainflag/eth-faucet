@@ -14,7 +14,7 @@
     "prettier": "^3.0.0",
     "prettier-plugin-svelte": "^3.3.3",
     "svelte": "^4.2.18",
-    "vite": "^6.2.6"
+    "vite": "^5.3.5"
   },
   "dependencies": {
     "@ethersproject/address": "^5.8.0",
