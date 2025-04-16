@@ -2,10 +2,10 @@ name: Docker
 
 on:
   push:
-    branches: [gatewayfm/generic-main]
+    branches: [main]
     tags: [v*]
   pull_request:
-    branches: [gatewayfm/generic-main]
+    branches: [main]
 
 jobs:
   docker:
