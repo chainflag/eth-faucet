@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [gatewayfm/generic-main]
-  pull_request:
-    branches: [gatewayfm/generic-main]
+    branches:
+      - "**" # matches every branch
+      - "!main" # excludes master
 
 jobs:
   build:
