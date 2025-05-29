@@ -2,6 +2,7 @@ package chain
 
 import (
 	"math/big"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/shopspring/decimal"
@@ -28,4 +29,16 @@ func IsValidAddress(address string, checksummed bool) bool {
 		return false
 	}
 	return !checksummed || common.HexToAddress(address).Hex() == address
+}
+
+func WeiToEther(wei *big.Int) string {
+	weiDecimal := decimal.NewFromBigInt(wei, 0)
+	etherDecimal := weiDecimal.Div(decimal.NewFromInt(1e18))
+	// Convert to string and remove trailing zeros
+	str := etherDecimal.String()
+	// Remove trailing zeros after decimal point
+	str = strings.TrimRight(str, "0")
+	// Remove decimal point if it's the last character
+	str = strings.TrimRight(str, ".")
+	return str
 }

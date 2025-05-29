@@ -3,10 +3,13 @@ package server
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni/v3"
 
@@ -53,6 +56,41 @@ func (s *Server) handleClaim() http.HandlerFunc {
 
 		// The error always be nil since it has already been handled in limiter
 		address, _ := readAddress(r)
+
+		// Check mainnet balance if configured
+		if s.cfg.minMainnetBalance != nil && s.cfg.minMainnetBalance.Cmp(big.NewInt(0)) > 0 {
+			var balance *big.Int
+
+			// Try to get balance from cache first
+			if cachedBalance, exists := GetCachedBalance(address); exists {
+				balance = cachedBalance
+			} else {
+				// If not in cache, query the mainnet node
+				mainnetClient, err := ethclient.Dial(s.cfg.mainnetProvider)
+				if err != nil {
+					log.WithError(err).Error("Failed to connect to mainnet provider")
+					renderJSON(w, claimResponse{Message: "Failed to check mainnet balance"}, http.StatusInternalServerError)
+					return
+				}
+				defer mainnetClient.Close()
+
+				balance, err = mainnetClient.BalanceAt(r.Context(), common.HexToAddress(address), nil)
+				if err != nil {
+					log.WithError(err).Error("Failed to get mainnet balance")
+					renderJSON(w, claimResponse{Message: "Failed to check mainnet balance"}, http.StatusInternalServerError)
+					return
+				}
+
+				// Cache the balance
+				CacheBalance(address, balance)
+			}
+
+			if balance.Cmp(s.cfg.minMainnetBalance) < 0 {
+				renderJSON(w, claimResponse{Message: fmt.Sprintf("Destination address must have at least %s ETH on mainnet", chain.WeiToEther(s.cfg.minMainnetBalance))}, http.StatusBadRequest)
+				return
+			}
+		}
+
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
 		txHash, err := s.Transfer(ctx, address, chain.GweiToWei(s.cfg.payout))

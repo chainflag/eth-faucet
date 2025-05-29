@@ -24,16 +24,18 @@ var (
 	proxyCntFlag = flag.Int("proxycount", 0, "Count of reverse proxies in front of the server")
 	versionFlag  = flag.Bool("version", false, "Print version number")
 
-	payoutFlag     = flag.Int64("faucet.amount", 1000000000, "Number of Gwei to transfer per user request")
-	intervalFlag   = flag.Int("faucet.minutes", 1440, "Number of minutes to wait between funding rounds")
-	netnameFlag    = flag.String("faucet.name", "testnet", "Network name to display on the frontend")
-	symbolFlag     = flag.String("faucet.symbol", "ETH", "Token symbol to display on the frontend")
-	logoFlag       = flag.String("frontend.logo", "/gatewayfm-logo.svg", "Logo to display on the frontend")
-	backgroundFlag = flag.String("frontend.background", "/background.jpg", "Background to display on the frontend")
-	keyJSONFlag    = flag.String("wallet.keyjson", os.Getenv("KEYSTORE"), "Keystore file to fund user requests with")
-	keyPassFlag    = flag.String("wallet.keypass", "password.txt", "Passphrase text file to decrypt keystore")
-	privKeyFlag    = flag.String("wallet.privkey", os.Getenv("PRIVATE_KEY"), "Private key hex to fund user requests with")
-	providerFlag   = flag.String("wallet.provider", os.Getenv("WEB3_PROVIDER"), "Endpoint for Ethereum JSON-RPC connection")
+	payoutFlag            = flag.Int64("faucet.amount", 1000000000, "Number of Gwei to transfer per user request")
+	intervalFlag          = flag.Int("faucet.minutes", 1440, "Number of minutes to wait between funding rounds")
+	netnameFlag           = flag.String("faucet.name", "testnet", "Network name to display on the frontend")
+	symbolFlag            = flag.String("faucet.symbol", "ETH", "Token symbol to display on the frontend")
+	logoFlag              = flag.String("frontend.logo", "/gatewayfm-logo.svg", "Logo to display on the frontend")
+	backgroundFlag        = flag.String("frontend.background", "/background.jpg", "Background to display on the frontend")
+	keyJSONFlag           = flag.String("wallet.keyjson", os.Getenv("KEYSTORE"), "Keystore file to fund user requests with")
+	keyPassFlag           = flag.String("wallet.keypass", "password.txt", "Passphrase text file to decrypt keystore")
+	privKeyFlag           = flag.String("wallet.privkey", os.Getenv("PRIVATE_KEY"), "Private key hex to fund user requests with")
+	providerFlag          = flag.String("wallet.provider", os.Getenv("WEB3_PROVIDER"), "Endpoint for Ethereum JSON-RPC connection")
+	mainnetProviderFlag   = flag.String("wallet.mainnetprovider", os.Getenv("MAINNET_WEB3_PROVIDER"), "Endpoint for Ethereum mainnet JSON-RPC connection")
+	minMainnetBalanceFlag = flag.Int64("faucet.minmainnetbalance", 0, "Minimum balance required on mainnet (in Gwei)")
 
 	frontendTypeFlag = flag.String("frontend.type", "redesign", "Type of frontend to generate. Values enum: 'base', 'redesign'.")
 	paidCustomerFlag = flag.Bool("faucet.paidcustomer", false, "Whether the faucet belongs to the paid customer")
@@ -64,6 +66,15 @@ func Execute() {
 	if err != nil {
 		panic(fmt.Errorf("cannot connect to web3 provider: %w", err))
 	}
+
+	var minMainnetBalance *big.Int
+	if *minMainnetBalanceFlag > 0 {
+		if *mainnetProviderFlag == "" {
+			panic(fmt.Errorf("mainnet provider must be specified when minimum balance is set"))
+		}
+		minMainnetBalance = chain.GweiToWei(*minMainnetBalanceFlag)
+	}
+
 	config := server.NewConfig(
 		*netnameFlag,
 		*symbolFlag,
@@ -77,6 +88,8 @@ func Execute() {
 		*backgroundFlag,
 		*frontendTypeFlag,
 		*paidCustomerFlag,
+		*mainnetProviderFlag,
+		minMainnetBalance,
 	)
 
 	go server.NewServer(txBuilder, config).Run()
@@ -84,8 +97,8 @@ func Execute() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	<-c
-
 }
+
 func getPrivateKeyFromFlags() (*ecdsa.PrivateKey, error) {
 	if *privKeyFlag != "" {
 		hexkey := *privKeyFlag
