@@ -24,7 +24,7 @@ The faucet is a web application with the goal of distributing small amounts of E
 
 ### Installation
 
-1. Clone the repository and navigate to the app’s directory
+1. Clone the repository and navigate to the app's directory
 
 ```bash
 git clone https://github.com/chainflag/eth-faucet.git
@@ -32,6 +32,7 @@ cd eth-faucet
 ```
 
 2. Bundle frontend with Vite
+
 ```bash
 go generate
 ```
@@ -59,6 +60,7 @@ go build -o eth-faucet
 ### Configuration
 
 You can configure the funding account by using environment variables instead of command-line flags:
+
 ```bash
 export WEB3_PROVIDER=rpc_endpoint
 export PRIVATE_KEY=hex_private_key
@@ -96,17 +98,19 @@ The following are the available command-line flags(excluding above wallet flags)
 | -frontend.background | Background to display on the frontend             | /background.jpg     |
 | -frontend.type       | Type of Frontend to display (base, redesign)      | base                |
 | -faucet.paidcustomer | Whether the faucet will belong to a paid customer | false               |
+| -wallet.mainnetprovider | Endpoint for Ethereum mainnet JSON-RPC connection |                     |
+| -faucet.minmainnetbalance | Minimum balance required on mainnet (in Gwei)     | 0                   |
 
 ### Docker deployment
 
 ```bash
-docker run -d -p 8080:8080 -e WEB3_PROVIDER=rpc_endpoint -e PRIVATE_KEY=hex_private_key chainflag/eth-faucet:1.2.0
+docker run -d -p 8080:8080 -e WEB3_PROVIDER=rpc_endpoint -e PRIVATE_KEY=hex_private_key -e MAINNET_WEB3_PROVIDER=mainnet_rpc_endpoint -e MIN_MAINNET_BALANCE=1000000000 chainflag/eth-faucet:1.2.0
 ```
 
 or
 
 ```bash
-docker run -d -p 8080:8080 -e WEB3_PROVIDER=rpc_endpoint -e KEYSTORE=keystore_path -v `pwd`/keystore:/app/keystore -v `pwd`/password.txt:/app/password.txt chainflag/eth-faucet:1.2.0
+docker run -d -p 8080:8080 -e WEB3_PROVIDER=rpc_endpoint -e KEYSTORE=keystore_path -v `pwd`/keystore:/app/keystore -v `pwd`/password.txt:/app/password.txt -e MAINNET_WEB3_PROVIDER=mainnet_rpc_endpoint -e MIN_MAINNET_BALANCE=1000000000 chainflag/eth-faucet:1.2.0
 ```
 
 ## License
