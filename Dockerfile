@@ -22,7 +22,7 @@ COPY --from=frontend /frontend-build/dist web/dist
 
 RUN go build -o eth-faucet -ldflags "-s -w"
 
-FROM alpine
+FROM alpine:3.22.1
 
 RUN apk add --no-cache ca-certificates
 
