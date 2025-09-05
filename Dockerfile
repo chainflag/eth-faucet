@@ -8,7 +8,7 @@ RUN yarn install
 COPY web ./
 RUN yarn build
 
-FROM golang:1.23-alpine3.20 AS backend
+FROM golang:1.25-alpine AS backend
 
 RUN apk add --no-cache gcc musl-dev linux-headers
 
@@ -22,7 +22,7 @@ COPY --from=frontend /frontend-build/dist web/dist
 
 RUN go build -o eth-faucet -ldflags "-s -w"
 
-FROM alpine:3.22.1
+FROM alpine:3.22
 
 RUN apk add --no-cache ca-certificates
 
