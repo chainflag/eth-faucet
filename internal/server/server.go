@@ -41,7 +41,7 @@ func (s *Server) setupRouter() *http.ServeMux {
 func (s *Server) Run() {
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
 	n.UseHandler(s.setupRouter())
-	
+
 	s.server = &http.Server{
 		Addr:         ":" + strconv.Itoa(s.cfg.httpPort),
 		Handler:      n,
@@ -49,7 +49,7 @@ func (s *Server) Run() {
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  60 * time.Second,
 	}
-	
+
 	log.Infof("Starting http server on port %d", s.cfg.httpPort)
 	if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("Server failed to start: %v", err)
@@ -75,7 +75,7 @@ func (s *Server) handleClaim() http.HandlerFunc {
 
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
-		
+
 		txHash, err := s.Transfer(ctx, address, chain.EtherToWei(s.cfg.payout))
 		if err != nil {
 			log.WithFields(log.Fields{

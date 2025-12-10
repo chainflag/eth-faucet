@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync/atomic"
 
-    "github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -68,10 +68,10 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 	if value == nil || value.Sign() <= 0 {
 		return common.Hash{}, fmt.Errorf("invalid transfer value: must be positive")
 	}
-	
+
 	gasLimit := uint64(21000)
 	toAddress := common.HexToAddress(to)
-	
+
 	nonce := b.getAndIncrementNonce()
 
 	var err error

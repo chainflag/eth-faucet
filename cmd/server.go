@@ -13,8 +13,8 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/ethereum/go-ethereum/crypto"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/chainflag/eth-faucet/internal/chain"
 	"github.com/chainflag/eth-faucet/internal/server"
@@ -67,7 +67,7 @@ func Execute() {
 
 	config := server.NewConfig(*netnameFlag, *symbolFlag, *httpPortFlag, *intervalFlag, *proxyCntFlag, *payoutFlag, *hcaptchaSiteKeyFlag, *hcaptchaSecretFlag)
 	srv := server.NewServer(txBuilder, config)
-	
+
 	// Run server in goroutine
 	go srv.Run()
 
@@ -80,7 +80,7 @@ func Execute() {
 	log.Info("Shutting down server...")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	
+
 	if err := srv.Shutdown(ctx); err != nil {
 		log.WithError(err).Error("Server forced to shutdown")
 	} else {
