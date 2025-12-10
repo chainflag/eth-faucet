@@ -202,7 +202,7 @@
           <div class="navbar-brand">
             <a class="navbar-item" href="/">
               <span class="icon">
-                <i class="fa fa-bath" />
+                <i class="fa fa-bath"></i>
               </span>
               <span><b>{faucetInfo.symbol} Faucet</b></span>
             </a>
@@ -215,7 +215,7 @@
                   href="https://github.com/chainflag/eth-faucet"
                 >
                   <span class="icon">
-                    <i class="fa fa-github" />
+                    <i class="fa fa-github"></i>
                   </span>
                   <span>View Source</span>
                 </a>
@@ -245,7 +245,7 @@
                   class="input is-rounded"
                   type="text"
                   placeholder="Enter your address or ENS name"
-                  on:keydown={(e) => {
+                  onkeydown={(e) => {
                     if (e.key === 'Enter' && !isLoading) {
                       handleRequest();
                     }
@@ -254,7 +254,7 @@
               </p>
               <p class="control">
                 <button
-                  on:click={handleRequest}
+                  onclick={handleRequest}
                   class="button is-primary is-rounded"
                   disabled={isLoading}
                   class:is-loading={isLoading}

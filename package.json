@@ -1,5 +1,5 @@
 {
   "scripts": {
-    "build": "npm install -g yarn && cd web && yarn install && yarn vite build"
+    "build": "command -v yarn &>/dev/null || npm install -g yarn && cd web && yarn install && yarn vite build"
   }
 }
