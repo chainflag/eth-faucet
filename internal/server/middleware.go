@@ -60,15 +60,19 @@ func (l *Limiter) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Ha
 	l.mutex.Unlock()
 
 	next.ServeHTTP(w, r)
-	if w.(negroni.ResponseWriter).Status() != http.StatusOK {
+	status := w.(negroni.ResponseWriter).Status()
+	if status != http.StatusOK {
+		// If request fails, remove limit records to allow retry
+		l.mutex.Lock()
 		l.cache.Remove(address)
 		l.cache.Remove(clientIP)
+		l.mutex.Unlock()
 		return
 	}
 	log.WithFields(log.Fields{
 		"address":  address,
 		"clientIP": clientIP,
-	}).Info("Maximum request limit has been reached")
+	}).Info("Request succeeded, rate limit applied")
 }
 
 func (l *Limiter) limitByKey(w http.ResponseWriter, key string) bool {
