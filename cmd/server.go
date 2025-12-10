@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"errors"
 	"flag"
@@ -9,7 +10,10 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/chainflag/eth-faucet/internal/chain"
@@ -60,12 +64,28 @@ func Execute() {
 	if err != nil {
 		panic(fmt.Errorf("cannot connect to web3 provider: %w", err))
 	}
-	config := server.NewConfig(*netnameFlag, *symbolFlag, *httpPortFlag, *intervalFlag, *proxyCntFlag, *payoutFlag, *hcaptchaSiteKeyFlag, *hcaptchaSecretFlag)
-	go server.NewServer(txBuilder, config).Run()
 
+	config := server.NewConfig(*netnameFlag, *symbolFlag, *httpPortFlag, *intervalFlag, *proxyCntFlag, *payoutFlag, *hcaptchaSiteKeyFlag, *hcaptchaSecretFlag)
+	srv := server.NewServer(txBuilder, config)
+	
+	// Run server in goroutine
+	go srv.Run()
+
+	// Wait for interrupt signal
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	<-c
+
+	// Graceful shutdown
+	log.Info("Shutting down server...")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	
+	if err := srv.Shutdown(ctx); err != nil {
+		log.WithError(err).Error("Server forced to shutdown")
+	} else {
+		log.Info("Server exited")
+	}
 }
 
 func getPrivateKeyFromFlags() (*ecdsa.PrivateKey, error) {

@@ -3,11 +3,12 @@ package chain
 import (
 	"context"
 	"crypto/ecdsa"
+	"fmt"
 	"math/big"
 	"strings"
 	"sync/atomic"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+    "github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -64,8 +65,13 @@ func (b *TxBuild) Sender() common.Address {
 }
 
 func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (common.Hash, error) {
+	if value == nil || value.Sign() <= 0 {
+		return common.Hash{}, fmt.Errorf("invalid transfer value: must be positive")
+	}
+	
 	gasLimit := uint64(21000)
 	toAddress := common.HexToAddress(to)
+	
 	nonce := b.getAndIncrementNonce()
 
 	var err error
@@ -88,7 +94,7 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 
 	if err = b.client.SendTransaction(ctx, signedTx); err != nil {
 		if strings.Contains(strings.ToLower(err.Error()), "nonce") {
-			b.refreshNonce(context.Background())
+			b.refreshNonce(ctx)
 		}
 		return common.Hash{}, err
 	}
@@ -152,6 +158,7 @@ func (b *TxBuild) refreshNonce(ctx context.Context) {
 	}
 
 	atomic.StoreUint64(&b.nonce, nonce)
+	log.WithField("nonce", nonce).Info("Nonce refreshed successfully")
 }
 
 func checkEIP1559Support(client *ethclient.Client) (bool, error) {

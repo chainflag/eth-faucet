@@ -41,9 +41,9 @@ func decodeJSONBody(r *http.Request, dst interface{}) error {
 	if r.Body == nil {
 		return &malformedRequest{status: http.StatusBadRequest, message: "Request body is empty"}
 	}
+	defer r.Body.Close()
 
 	body, err := io.ReadAll(io.LimitReader(r.Body, 1024))
-	defer r.Body.Close()
 	if err != nil {
 		return &malformedRequest{status: http.StatusBadRequest, message: "Unable to read request body"}
 	}

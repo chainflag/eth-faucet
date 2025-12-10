@@ -8,9 +8,16 @@ import (
 )
 
 func EtherToWei(amount float64) *big.Int {
+	if amount < 0 {
+		return big.NewInt(0)
+	}
 	oneEther := decimal.NewFromFloat(1e18)
 	result := decimal.NewFromFloat(amount).Mul(oneEther)
-	wei, _ := new(big.Int).SetString(result.String(), 10)
+	wei, ok := new(big.Int).SetString(result.String(), 10)
+	if !ok {
+		// Return 0 if conversion fails
+		return big.NewInt(0)
+	}
 	return wei
 }
 

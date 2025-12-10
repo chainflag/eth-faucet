@@ -16,7 +16,8 @@ import (
 
 type Server struct {
 	chain.TxBuilder
-	cfg *Config
+	cfg    *Config
+	server *http.Server
 }
 
 func NewServer(builder chain.TxBuilder, cfg *Config) *Server {
@@ -40,25 +41,48 @@ func (s *Server) setupRouter() *http.ServeMux {
 func (s *Server) Run() {
 	n := negroni.New(negroni.NewRecovery(), negroni.NewLogger())
 	n.UseHandler(s.setupRouter())
-	log.Infof("Starting http server %d", s.cfg.httpPort)
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(s.cfg.httpPort), n))
+	
+	s.server = &http.Server{
+		Addr:         ":" + strconv.Itoa(s.cfg.httpPort),
+		Handler:      n,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+	
+	log.Infof("Starting http server on port %d", s.cfg.httpPort)
+	if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("Server failed to start: %v", err)
+	}
+}
+
+func (s *Server) Shutdown(ctx context.Context) error {
+	if s.server != nil {
+		return s.server.Shutdown(ctx)
+	}
+	return nil
 }
 
 func (s *Server) handleClaim() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
-			http.NotFound(w, r)
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
 
-		// The error always be nil since it has already been handled in limiter
+		// Address has already been validated by limiter
 		address, _ := readAddress(r)
+
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
+		
 		txHash, err := s.Transfer(ctx, address, chain.EtherToWei(s.cfg.payout))
 		if err != nil {
-			log.WithError(err).Error("Failed to send transaction")
-			renderJSON(w, claimResponse{Message: err.Error()}, http.StatusInternalServerError)
+			log.WithFields(log.Fields{
+				"error":   err,
+				"address": address,
+			}).Error("Failed to send transaction")
+			renderJSON(w, claimResponse{Message: fmt.Sprintf("Transaction failed: %v", err)}, http.StatusInternalServerError)
 			return
 		}
 
