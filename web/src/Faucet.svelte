@@ -15,29 +15,59 @@
 
   let mounted = false;
   let hcaptchaLoaded = false;
+  let isLoading = false;
+  let widgetID = null;
+
+  // Use unique function name to avoid global variable conflicts
+  const HCAPTCHA_CALLBACK_NAME = 'hcaptchaOnLoad_' + Date.now();
 
   onMount(async () => {
-    const res = await fetch('/api/info');
-    faucetInfo = await res.json();
-    mounted = true;
+    try {
+      const res = await fetch('/api/info');
+      if (!res.ok) {
+        throw new Error('Failed to fetch faucet info');
+      }
+      faucetInfo = await res.json();
+      mounted = true;
+    } catch (error) {
+      console.error('Failed to load faucet info:', error);
+      toast({
+        message: 'Failed to load faucet information. Please refresh the page.',
+        type: 'is-danger',
+      });
+    }
   });
 
-  window.hcaptchaOnLoad = () => {
-    hcaptchaLoaded = true;
-  };
+  // Register hCaptcha callback function
+  if (typeof window !== 'undefined') {
+    window[HCAPTCHA_CALLBACK_NAME] = () => {
+      hcaptchaLoaded = true;
+    };
+  }
 
   $: document.title = `${faucetInfo.symbol} ${capitalize(
     faucetInfo.network,
   )} Faucet`;
 
-  let widgetID;
-  $: if (mounted && hcaptchaLoaded) {
-    widgetID = window.hcaptcha.render('hcaptcha', {
-      sitekey: faucetInfo.hcaptcha_sitekey,
-    });
+  $: if (
+    mounted &&
+    hcaptchaLoaded &&
+    widgetID === null &&
+    faucetInfo.hcaptcha_sitekey &&
+    window.hcaptcha
+  ) {
+    try {
+      widgetID = window.hcaptcha.render('hcaptcha', {
+        sitekey: faucetInfo.hcaptcha_sitekey,
+      });
+    } catch (error) {
+      console.error('Failed to render hCaptcha:', error);
+    }
   }
 
+  // Configure toast default options
   setToast({
+    message: '', // Default message, will be overridden when used
     position: 'bottom-center',
     dismissible: true,
     pauseOnHover: true,
@@ -46,71 +76,118 @@
   });
 
   async function handleRequest() {
-    let address = input;
-    if (address === null) {
-      toast({ message: 'input required', type: 'is-warning' });
+    if (isLoading) return;
+
+    let address = input?.trim();
+    if (!address) {
+      toast({
+        message: 'Please enter an address or ENS name',
+        type: 'is-warning',
+      });
       return;
     }
 
-    if (address.endsWith('.eth')) {
-      try {
-        const provider = new CloudflareProvider();
-        address = await provider.resolveName(address);
-        if (!address) {
-          toast({ message: 'invalid ENS name', type: 'is-warning' });
+    isLoading = true;
+
+    try {
+      // Handle ENS name resolution
+      if (address.endsWith('.eth')) {
+        try {
+          const provider = new CloudflareProvider();
+          address = await provider.resolveName(address);
+          if (!address) {
+            toast({ message: 'Invalid ENS name', type: 'is-warning' });
+            return;
+          }
+        } catch (error) {
+          const errorMessage =
+            error?.reason || error?.message || 'Failed to resolve ENS name';
+          toast({ message: errorMessage, type: 'is-warning' });
           return;
         }
+      }
+
+      // Validate Ethereum address
+      try {
+        address = getAddress(address);
       } catch (error) {
-        toast({ message: error.reason, type: 'is-warning' });
+        const errorMessage =
+          error?.reason || error?.message || 'Invalid Ethereum address';
+        toast({ message: errorMessage, type: 'is-warning' });
         return;
       }
-    }
 
-    try {
-      address = getAddress(address);
-    } catch (error) {
-      toast({ message: error.reason, type: 'is-warning' });
-      return;
-    }
-
-    try {
-      let headers = {
+      // Prepare request headers
+      const headers = {
         'Content-Type': 'application/json',
       };
 
-      if (hcaptchaLoaded) {
-        const { response } = await window.hcaptcha.execute(widgetID, {
-          async: true,
-        });
-        headers['h-captcha-response'] = response;
+      // Execute hCaptcha verification
+      if (hcaptchaLoaded && widgetID !== null) {
+        try {
+          const { response } = await window.hcaptcha.execute(widgetID, {
+            async: true,
+          });
+          headers['h-captcha-response'] = response;
+        } catch (error) {
+          console.error('hCaptcha execution failed:', error);
+          toast({
+            message: 'Verification failed. Please try again.',
+            type: 'is-warning',
+          });
+          return;
+        }
       }
 
+      // Send request
       const res = await fetch('/api/claim', {
         method: 'POST',
         headers,
-        body: JSON.stringify({
-          address,
-        }),
+        body: JSON.stringify({ address }),
       });
 
-      let { msg } = await res.json();
-      let type = res.ok ? 'is-success' : 'is-warning';
-      toast({ message: msg, type });
-    } catch (err) {
-      console.error(err);
+      let data;
+      try {
+        data = await res.json();
+      } catch (error) {
+        console.error('Failed to parse response:', error);
+        toast({
+          message: 'Invalid response from server. Please try again.',
+          type: 'is-danger',
+        });
+        return;
+      }
+
+      if (res.ok) {
+        const message = data?.msg || 'Transaction successful';
+        toast({ message, type: 'is-success' });
+        input = '';
+      } else {
+        const errorMessage = data?.msg || 'Request failed';
+        toast({ message: errorMessage, type: 'is-danger' });
+      }
+    } catch (error) {
+      console.error('Request failed:', error);
+      toast({
+        message:
+          error?.message || 'An unexpected error occurred. Please try again.',
+        type: 'is-danger',
+      });
+    } finally {
+      isLoading = false;
     }
   }
 
   function capitalize(str) {
-    const lower = str.toLowerCase();
-    return str.charAt(0).toUpperCase() + lower.slice(1);
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
 </script>
 
 <svelte:head>
   {#if mounted && faucetInfo.hcaptcha_sitekey}
     <script
-      src="https://hcaptcha.com/1/api.js?onload=hcaptchaOnLoad&render=explicit"
+      src="https://hcaptcha.com/1/api.js?onload={HCAPTCHA_CALLBACK_NAME}&render=explicit"
       async
       defer
     ></script>
@@ -123,7 +200,7 @@
       <nav class="navbar">
         <div class="container">
           <div class="navbar-brand">
-            <a class="navbar-item" href="../..">
+            <a class="navbar-item" href="/">
               <span class="icon">
                 <i class="fa fa-bath" />
               </span>
@@ -168,12 +245,19 @@
                   class="input is-rounded"
                   type="text"
                   placeholder="Enter your address or ENS name"
+                  on:keydown={(e) => {
+                    if (e.key === 'Enter' && !isLoading) {
+                      handleRequest();
+                    }
+                  }}
                 />
               </p>
               <p class="control">
                 <button
                   on:click={handleRequest}
                   class="button is-primary is-rounded"
+                  disabled={isLoading}
+                  class:is-loading={isLoading}
                 >
                   Request
                 </button>
