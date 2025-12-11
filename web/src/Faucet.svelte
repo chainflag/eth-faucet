@@ -1,7 +1,6 @@
 <script>
   import { onMount } from 'svelte';
   import { getAddress } from '@ethersproject/address';
-  import { CloudflareProvider } from '@ethersproject/providers';
   import { setDefaults as setToast, toast } from 'bulma-toast';
 
   let input = null;
@@ -93,27 +92,39 @@
       // Handle ENS name resolution
       if (address.endsWith('.eth')) {
         try {
-          const provider = new CloudflareProvider();
-          address = await provider.resolveName(address);
-          if (!address) {
-            toast({ message: 'Invalid ENS name', type: 'is-warning' });
+          const res = await fetch(`https://api.ensdata.net/${address}`, {
+            method: 'GET',
+            headers: { Accept: 'application/json' },
+          });
+
+          if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+          }
+
+          const data = await res.json();
+          const resolvedAddress = data?.address;
+
+          if (!resolvedAddress || !resolvedAddress.startsWith('0x')) {
+            toast({
+              message: 'Invalid ENS name or no address found',
+              type: 'is-warning',
+            });
             return;
           }
+
+          address = resolvedAddress;
         } catch (error) {
-          const errorMessage =
-            error?.reason || error?.message || 'Failed to resolve ENS name';
+          const errorMessage = error?.message || 'Failed to resolve ENS name';
           toast({ message: errorMessage, type: 'is-warning' });
           return;
         }
       }
 
-      // Validate Ethereum address
+      // Validate and normalize Ethereum address
       try {
         address = getAddress(address);
-      } catch (error) {
-        const errorMessage =
-          error?.reason || error?.message || 'Invalid Ethereum address';
-        toast({ message: errorMessage, type: 'is-warning' });
+      } catch {
+        toast({ message: 'Invalid Ethereum address', type: 'is-warning' });
         return;
       }
 
