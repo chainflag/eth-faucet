@@ -3,7 +3,7 @@ module github.com/chainflag/eth-faucet
 go 1.17
 
 require (
-	github.com/agiledragon/gomonkey/v2 v2.13.0
+	github.com/agiledragon/gomonkey/v2 v2.14.0
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/jellydator/ttlcache/v2 v2.11.1
 	github.com/kataras/hcaptcha v0.0.2
