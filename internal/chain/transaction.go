@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
-	"sync/atomic"
+	"sync"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -22,6 +22,7 @@ type TxBuilder interface {
 }
 
 type TxBuild struct {
+	mu              sync.Mutex
 	client          bind.ContractTransactor
 	privateKey      *ecdsa.PrivateKey
 	signer          types.Signer
@@ -69,10 +70,12 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 		return common.Hash{}, fmt.Errorf("invalid transfer value: must be positive")
 	}
 
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
 	gasLimit := uint64(21000)
 	toAddress := common.HexToAddress(to)
-
-	nonce := b.getAndIncrementNonce()
+	nonce := b.nonce
 
 	var err error
 	var unsignedTx *types.Transaction
@@ -99,6 +102,7 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 		return common.Hash{}, err
 	}
 
+	b.nonce++
 	return signedTx.Hash(), nil
 }
 
@@ -143,10 +147,6 @@ func (b *TxBuild) buildLegacyTx(ctx context.Context, to *common.Address, value *
 	}), nil
 }
 
-func (b *TxBuild) getAndIncrementNonce() uint64 {
-	return atomic.AddUint64(&b.nonce, 1) - 1
-}
-
 func (b *TxBuild) refreshNonce(ctx context.Context) {
 	nonce, err := b.client.PendingNonceAt(ctx, b.Sender())
 	if err != nil {
@@ -157,7 +157,7 @@ func (b *TxBuild) refreshNonce(ctx context.Context) {
 		return
 	}
 
-	atomic.StoreUint64(&b.nonce, nonce)
+	b.nonce = nonce
 	log.WithField("nonce", nonce).Info("Nonce refreshed successfully")
 }
 

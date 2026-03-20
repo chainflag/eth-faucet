@@ -82,7 +82,6 @@ func decodeJSONBody(r *http.Request, dst interface{}) error {
 		}
 	}
 
-	r.Body = io.NopCloser(bytes.NewReader(body))
 	return nil
 }
 

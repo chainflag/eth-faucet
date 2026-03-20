@@ -17,7 +17,7 @@ import (
 )
 
 type Server struct {
-	chain.TxBuilder
+	txBuilder chain.TxBuilder
 	cfg       *Config
 	server    *http.Server
 	payoutWei *big.Int
@@ -25,7 +25,7 @@ type Server struct {
 
 func NewServer(builder chain.TxBuilder, cfg *Config) *Server {
 	return &Server{
-		TxBuilder: builder,
+		txBuilder: builder,
 		cfg:       cfg,
 		payoutWei: chain.EtherToWei(cfg.payout),
 	}
@@ -78,13 +78,16 @@ func (s *Server) handleClaim() http.HandlerFunc {
 			return
 		}
 
-		// Address has already been validated by limiter
-		address, _ := readAddress(r)
+		address, ok := r.Context().Value(addressContextKey).(string)
+		if !ok || address == "" {
+			renderJSON(w, claimResponse{Message: "invalid request"}, http.StatusBadRequest)
+			return
+		}
 
 		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 		defer cancel()
 
-		txHash, err := s.Transfer(ctx, address, new(big.Int).Set(s.payoutWei))
+		txHash, err := s.txBuilder.Transfer(ctx, address, new(big.Int).Set(s.payoutWei))
 		if err != nil {
 			log.WithFields(log.Fields{
 				"error":   err,
@@ -110,7 +113,7 @@ func (s *Server) handleInfo() http.HandlerFunc {
 			return
 		}
 		renderJSON(w, infoResponse{
-			Account:         s.Sender().String(),
+			Account:         s.txBuilder.Sender().String(),
 			Network:         s.cfg.network,
 			Symbol:          s.cfg.symbol,
 			Payout:          strconv.FormatFloat(s.cfg.payout, 'f', -1, 64),

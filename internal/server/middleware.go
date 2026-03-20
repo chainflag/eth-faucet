@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -14,6 +15,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/negroni/v3"
 )
+
+type contextKey int
+
+const addressContextKey contextKey = iota
 
 type Limiter struct {
 	mutex      sync.Mutex
@@ -43,6 +48,8 @@ func (l *Limiter) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Ha
 		}
 		return
 	}
+
+	r = r.WithContext(context.WithValue(r.Context(), addressContextKey, address))
 
 	if l.ttl <= 0 {
 		next.ServeHTTP(w, r)
