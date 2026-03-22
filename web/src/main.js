@@ -1,13 +1,10 @@
+import 'animate.css';
+import 'bulma/css/bulma.css';
 import { mount } from 'svelte';
-import App from './App.svelte';
+import Faucet from './Faucet.svelte';
 
-const target = document.getElementById('app');
-if (!target) {
-  throw new Error('App container element not found');
-}
-
-const app = mount(App, {
-  target,
+const app = mount(Faucet, {
+  target: document.getElementById('app'),
 });
 
 export default app;

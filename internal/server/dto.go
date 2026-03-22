@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/chainflag/eth-faucet/internal/chain"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 type claimRequest struct {
@@ -90,11 +91,11 @@ func readAddress(r *http.Request) (string, error) {
 	if err := decodeJSONBody(r, &claimReq); err != nil {
 		return "", err
 	}
-	if !chain.IsValidAddress(claimReq.Address, true) {
+	if !chain.IsValidAddress(claimReq.Address, false) {
 		return "", &malformedRequest{status: http.StatusBadRequest, message: "invalid address"}
 	}
 
-	return claimReq.Address, nil
+	return common.HexToAddress(claimReq.Address).Hex(), nil
 }
 
 func renderJSON(w http.ResponseWriter, v interface{}, code int) error {
